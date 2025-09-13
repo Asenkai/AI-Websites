@@ -18,10 +18,6 @@ export default {
       },
     },
     extend: {
-      fontFamily: {
-        serif: ['"Playfair Display"', 'serif'],
-        sans: ['"Inter"', 'sans-serif'],
-      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -65,19 +61,6 @@ export default {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
-        },
-        // Custom NGO colors
-        'primary-teal': {
-          DEFAULT: 'hsl(180 70% 30%)', // Main teal
-          foreground: 'hsl(0 0% 100%)', // White text on teal
-        },
-        'accent-yellow': {
-          DEFAULT: 'hsl(40 90% 60%)', // Warm yellow highlight
-          foreground: 'hsl(222.2 47.4% 11.2%)', // Dark text on yellow
-        },
-        'cta-green': {
-          DEFAULT: 'hsl(120 60% 40%)', // Soft green for CTAs
-          foreground: 'hsl(0 0% 100%)', // White text on green
         },
       },
       borderRadius: {

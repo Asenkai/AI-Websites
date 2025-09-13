@@ -42,12 +42,12 @@ const Index = () => {
               </Button>
             </Link>
             <Link to="/our-work">
-              <Button variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-primary-teal font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Button className="bg-white text-primary-teal hover:bg-gray-100 border border-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
                 Sponsor a Project
               </Button>
             </Link>
             <Link to="/csr-partnership">
-              <Button variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-primary-teal font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Button className="bg-white text-primary-teal hover:bg-gray-100 border border-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
                 CSR Partnership
               </Button>
             </Link>
@@ -168,7 +168,7 @@ const Index = () => {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <a href="/Aadiv_CSR_Dossier.pdf" download>
-              <Button variant="outline" className="border-2 border-primary-teal text-primary-teal hover:bg-primary-teal hover:text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+              <Button className="bg-white text-primary-teal hover:bg-gray-100 border border-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
                 Download CSR Dossier
               </Button>
             </a>

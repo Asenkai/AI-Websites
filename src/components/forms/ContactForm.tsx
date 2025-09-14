@@ -35,10 +35,35 @@ export const ContactForm = () => {
     },
   });
 
-  const onSubmit = (values: ContactFormValues) => {
-    console.log('Contact form submitted:', values);
-    toast.success('Your message has been sent! We will get back to you shortly.');
-    form.reset();
+  const onSubmit = async (values: ContactFormValues) => {
+    try {
+      // Replace with your actual Supabase Project ID and Edge Function name
+      const SUPABASE_PROJECT_ID = 'oaevwtrmhcllezptagsf';
+      const EDGE_FUNCTION_NAME = 'contact-form';
+      const response = await fetch(
+        `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/${EDGE_FUNCTION_NAME}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            // No Authorization header needed for this public form,
+            // as the Edge Function uses the service role key internally.
+          },
+          body: JSON.stringify(values),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send message.');
+      }
+
+      toast.success('Your message has been sent! We will get back to you shortly.');
+      form.reset();
+    } catch (error: any) {
+      console.error('Error submitting contact form:', error);
+      toast.error(`Failed to send message: ${error.message}`);
+    }
   };
 
   return (

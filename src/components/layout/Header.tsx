@@ -2,8 +2,16 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useSession } from '@/contexts/SessionContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export const Header = () => {
+  const { session } = useSession();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'About Us', path: '/about' },
@@ -31,6 +39,11 @@ export const Header = () => {
               {item.name}
             </Link>
           ))}
+          {session && (
+            <Link to="/admin">
+              <Button variant="outline">Admin Panel</Button>
+            </Link>
+          )}
           <Link to="/donate">
             <Button className="bg-cta-green hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
               Donate Now

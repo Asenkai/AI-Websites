@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { TrustBadges } from '@/components/shared/TrustBadges';
@@ -6,8 +6,41 @@ import { StatCard } from '@/components/shared/StatCard';
 import { FocusAreaCard } from '@/components/shared/FocusAreaCard';
 import { SectionTitle } from '@/components/shared/SectionTitle';
 import { BookOpen, Brain, Droplet, Soup, Home, PawPrint } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
+
+interface HomePageContent {
+  hero_title: string;
+  hero_subtitle: string;
+}
 
 const Index = () => {
+  const [content, setContent] = useState<HomePageContent | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('page_content')
+        .select('element_id, content_data')
+        .eq('page_slug', 'home');
+
+      if (error) {
+        console.error("Error fetching homepage content:", error);
+      } else {
+        const formattedContent = data.reduce((acc, item) => {
+          acc[item.element_id] = item.content_data.text;
+          return acc;
+        }, {} as any);
+        setContent(formattedContent);
+      }
+      setLoading(false);
+    };
+
+    fetchContent();
+  }, []);
+
   const impactStats = [
     { value: '10,842+', label: 'Families Fed' },
     { value: '2,137+', label: 'Therapy Sessions Delivered' },
@@ -29,12 +62,21 @@ const Index = () => {
       {/* Hero Banner */}
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-32 overflow-hidden">
         <div className="container text-center relative z-10">
-          <h1 className="font-serif text-4xl md:text-6xl font-extrabold leading-tight mb-6 animate-fade-in-up">
-            Healing, Hope & Dignity — Together
-          </h1>
-          <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 animate-fade-in-up delay-100">
-            Your small act today can feed a family, educate a child, or heal someone in need.
-          </p>
+          {loading ? (
+            <>
+              <Skeleton className="h-16 w-3/4 mx-auto mb-6" />
+              <Skeleton className="h-8 w-1/2 mx-auto mb-8" />
+            </>
+          ) : (
+            <>
+              <h1 className="font-serif text-4xl md:text-6xl font-extrabold leading-tight mb-6 animate-fade-in-up">
+                {content?.hero_title || 'Healing, Hope & Dignity — Together'}
+              </h1>
+              <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 animate-fade-in-up delay-100">
+                {content?.hero_subtitle || 'Your small act today can feed a family, educate a child, or heal someone in need.'}
+              </p>
+            </>
+          )}
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12 animate-fade-in-up delay-200">
             <Link to="/donate">
               <Button className="bg-accent-yellow hover:bg-yellow-600 text-primary-teal font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
@@ -54,7 +96,6 @@ const Index = () => {
           </div>
           <TrustBadges className="animate-fade-in-up delay-300" />
         </div>
-        {/* Background shapes for visual interest */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white rounded-full mix-blend-overlay filter blur-xl animate-blob"></div>
           <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-accent-yellow rounded-full mix-blend-overlay filter blur-xl animate-blob animation-delay-2000"></div>
@@ -102,7 +143,7 @@ const Index = () => {
         <div className="container flex flex-col md:flex-row items-center gap-8">
           <div className="md:w-1/2">
             <img
-              src="/placeholder.svg" // Replace with actual image of Rohit
+              src="/placeholder.svg"
               alt="Rohit, a child supported by Aadiv Care Foundation"
               className="w-full h-auto rounded-lg shadow-xl object-cover"
             />

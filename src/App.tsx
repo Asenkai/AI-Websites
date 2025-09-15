@@ -14,32 +14,50 @@ import CSRPartnership from "./pages/CSRPartnership";
 import Volunteer from "./pages/Volunteer";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import AdminPanel from "./pages/admin/AdminPanel";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { SessionProvider } from "./contexts/SessionContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Index />} />
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/our-work" element={<OurWork />} />
-            <Route path="/our-work/:causeId" element={<CauseDetail />} /> {/* Dynamic route for cause details */}
-            <Route path="/impact" element={<Impact />} />
-            <Route path="/donate" element={<Donate />} />
-            <Route path="/csr-partnership" element={<CSRPartnership />} />
-            <Route path="/volunteer" element={<Volunteer />} />
-            <Route path="/contact" element={<Contact />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+    <SessionProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Index />} />
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/our-work" element={<OurWork />} />
+              <Route path="/our-work/:causeId" element={<CauseDetail />} />
+              <Route path="/impact" element={<Impact />} />
+              <Route path="/donate" element={<Donate />} />
+              <Route path="/csr-partnership" element={<CSRPartnership />} />
+              <Route path="/volunteer" element={<Volunteer />} />
+              <Route path="/contact" element={<Contact />} />
+            </Route>
+            
+            {/* Routes without the main layout */}
+            <Route path="/login" element={<Login />} />
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute>
+                  <AdminPanel />
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </SessionProvider>
   </QueryClientProvider>
 );
 

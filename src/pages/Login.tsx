@@ -25,8 +25,9 @@ const Login = () => {
         <Auth
           supabaseClient={supabase}
           appearance={{ theme: ThemeSupa }}
-          providers={[]}
+          view="sign_in"
           theme="light"
+          showLinks={false}
         />
       </div>
     </div>

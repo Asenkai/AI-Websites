@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ContentItem {
   id: string;
@@ -17,6 +18,7 @@ interface ContentItem {
 const AdminPanel = () => {
   const [content, setContent] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,7 +27,7 @@ const AdminPanel = () => {
       const { data, error } = await supabase
         .from('page_content')
         .select('*')
-        .order('element_id');
+        .order('page_slug, element_id');
 
       if (error) {
         console.error('Error fetching content:', error);
@@ -39,15 +41,52 @@ const AdminPanel = () => {
     fetchContent();
   }, []);
 
-  const handleContentChange = (id: string, newText: string) => {
+  const handleContentChange = (id: string, field: 'text' | 'alt', value: string) => {
     setContent(prevContent =>
       prevContent.map(item =>
-        item.id === id ? { ...item, content_data: { ...item.content_data, text: newText } } : item
+        item.id === id ? { ...item, content_data: { ...item.content_data, [field]: value } } : item
       )
     );
   };
 
-  const handleSave = async (item: ContentItem) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, item: ContentItem) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(item.id);
+    const fileExt = file.name.split('.').pop();
+    const filePath = `public/${item.page_slug}/${item.element_id}-${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('site_assets')
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      toast.error(`Failed to upload ${file.name}.`);
+      console.error('Upload error:', uploadError);
+      setUploading(null);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('site_assets')
+      .getPublicUrl(filePath);
+
+    const updatedItem = {
+      ...item,
+      content_data: { ...item.content_data, url: publicUrl },
+    };
+
+    await handleSave(updatedItem, `File for ${item.element_id.replace(/_/g, ' ')} uploaded and saved.`);
+    
+    // Refresh content from DB to get the latest state
+    const { data } = await supabase.from('page_content').select('*').order('page_slug, element_id');
+    if (data) setContent(data as ContentItem[]);
+
+    setUploading(null);
+  };
+
+  const handleSave = async (item: ContentItem, successMessage?: string) => {
     const { error } = await supabase
       .from('page_content')
       .update({ content_data: item.content_data, updated_at: new Date().toISOString() })
@@ -57,7 +96,7 @@ const AdminPanel = () => {
       toast.error(`Failed to save ${item.element_id}.`);
       console.error('Error saving content:', error);
     } else {
-      toast.success(`${item.element_id} saved successfully!`);
+      toast.success(successMessage || `${item.element_id.replace(/_/g, ' ')} saved successfully!`);
     }
   };
 
@@ -66,13 +105,63 @@ const AdminPanel = () => {
     navigate('/');
   };
 
-  if (loading) {
-    return <div className="p-8">Loading content editor...</div>;
-  }
+  const renderContentItem = (item: ContentItem) => {
+    const isFile = item.element_id.includes('_pdf') || item.element_id.includes('_image');
+    
+    return (
+      <div key={item.id} className="space-y-2 p-4 border rounded-md">
+        <Label htmlFor={item.id} className="capitalize font-medium text-gray-800">{item.element_id.replace(/_/g, ' ')}</Label>
+        <div className="flex flex-col gap-2">
+          {item.content_data.text !== undefined && (
+            <Textarea
+              id={item.id}
+              value={item.content_data.text}
+              onChange={(e) => handleContentChange(item.id, 'text', e.target.value)}
+              rows={3}
+            />
+          )}
+          {isFile && (
+            <div className="flex items-center gap-4">
+              <Input
+                type="file"
+                onChange={(e) => handleFileChange(e, item)}
+                disabled={uploading === item.id}
+              />
+              {uploading === item.id && <p className="text-sm text-gray-500">Uploading...</p>}
+              {item.content_data.url && (
+                <a href={item.content_data.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline whitespace-nowrap">
+                  View Current
+                </a>
+              )}
+            </div>
+          )}
+          {item.element_id.includes('_image') && (
+             <Input
+                placeholder="Image Alt Text"
+                value={item.content_data.alt || ''}
+                onChange={(e) => handleContentChange(item.id, 'alt', e.target.value)}
+              />
+          )}
+          <Button onClick={() => handleSave(item)} className="self-end" size="sm">Save</Button>
+        </div>
+      </div>
+    );
+  };
+
+  const groupedContent = content.reduce((acc, item) => {
+    const group = item.page_slug;
+    if (!acc[group]) {
+      acc[group] = [];
+    }
+    acc[group].push(item);
+    return acc;
+  }, {} as Record<string, ContentItem[]>);
+
+  if (loading) return <div className="p-8">Loading content editor...</div>;
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow-sm">
+      <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-primary-teal font-serif">Admin Panel</h1>
           <div>
@@ -81,27 +170,17 @@ const AdminPanel = () => {
           </div>
         </div>
       </header>
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Homepage Content</h2>
-          <div className="space-y-6">
-            {content.filter(c => c.page_slug === 'home').map(item => (
-              <div key={item.id} className="space-y-2">
-                <Label htmlFor={item.id} className="capitalize font-medium">{item.element_id.replace(/_/g, ' ')}</Label>
-                <div className="flex items-center gap-4">
-                  <Textarea
-                    id={item.id}
-                    value={item.content_data.text || ''}
-                    onChange={(e) => handleContentChange(item.id, e.target.value)}
-                    className="flex-grow"
-                    rows={3}
-                  />
-                  <Button onClick={() => handleSave(item)}>Save</Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+        {Object.entries(groupedContent).map(([pageSlug, items]) => (
+          <Card key={pageSlug}>
+            <CardHeader>
+              <CardTitle className="capitalize text-primary-teal">{pageSlug.replace(/_/g, ' ')} Content</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {items.map(renderContentItem)}
+            </CardContent>
+          </Card>
+        ))}
       </main>
     </div>
   );

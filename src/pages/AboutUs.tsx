@@ -1,10 +1,56 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { SectionTitle } from '@/components/shared/SectionTitle';
 import { TrustBadges } from '@/components/shared/TrustBadges';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
+
+interface AboutPageContent {
+  story_p1: string;
+  story_p2: string;
+  mission: string;
+  vision: string;
+}
+
+interface DownloadableFiles {
+    certificates_pdf: { url: string };
+}
 
 const AboutUs = () => {
+  const [content, setContent] = useState<Partial<AboutPageContent>>({});
+  const [files, setFiles] = useState<Partial<DownloadableFiles>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('page_content')
+        .select('element_id, content_data')
+        .in('page_slug', ['about', 'downloads']);
+
+      if (error) {
+        console.error("Error fetching content:", error);
+      } else {
+        const formattedContent = data.reduce((acc, item) => {
+          if (item.element_id.includes('_pdf')) {
+            acc.files[item.element_id] = item.content_data;
+          } else {
+            acc.content[item.element_id] = item.content_data.text;
+          }
+          return acc;
+        }, { content: {}, files: {} } as any);
+        
+        setContent(formattedContent.content);
+        setFiles(formattedContent.files);
+      }
+      setLoading(false);
+    };
+
+    fetchContent();
+  }, []);
+
   return (
     <div className="font-sans">
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-24">
@@ -26,12 +72,22 @@ const AboutUs = () => {
             titleClassName="text-primary-teal"
             className="mb-8"
           />
-          <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-            Aadiv Care Foundation was born from a deep-seated commitment to uplift the most vulnerable sections of society. Founded as a Section 8 NGO, our journey began with a simple yet powerful belief: every individual deserves healing, hope, and dignity. We started with grassroots initiatives, addressing immediate needs like food and hygiene, and quickly expanded our scope to include long-term solutions in education, mental health, and elder care.
-          </p>
-          <p className="text-lg text-gray-700 leading-relaxed">
-            Over the years, we have grown into a recognized force for good, driven by the unwavering support of our donors, volunteers, and partners. Our story is one of collective action, where small acts of kindness multiply into significant, life-changing impact for thousands.
-          </p>
+          {loading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-3/4" />
+            </div>
+          ) : (
+            <>
+              <p className="text-lg text-gray-700 mb-6 leading-relaxed">
+                {content.story_p1}
+              </p>
+              <p className="text-lg text-gray-700 leading-relaxed">
+                {content.story_p2}
+              </p>
+            </>
+          )}
         </div>
       </section>
 
@@ -46,15 +102,19 @@ const AboutUs = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="p-6 bg-white rounded-lg shadow-md">
               <h3 className="font-serif text-2xl font-bold text-primary-teal mb-3">Our Mission</h3>
-              <p className="text-gray-700 leading-relaxed">
-                "To uplift underprivileged communities through comprehensive welfare programs encompassing therapy, education, hygiene, food security, and elder care, fostering a society where everyone can thrive with dignity."
-              </p>
+              {loading ? <Skeleton className="h-20 w-full" /> : (
+                <p className="text-gray-700 leading-relaxed">
+                  "{content.mission}"
+                </p>
+              )}
             </div>
             <div className="p-6 bg-white rounded-lg shadow-md">
               <h3 className="font-serif text-2xl font-bold text-primary-teal mb-3">Our Vision</h3>
-              <p className="text-gray-700 leading-relaxed">
-                "To impact over 1,00,000+ lives within the next five years, creating sustainable change and building resilient communities across India."
-              </p>
+              {loading ? <Skeleton className="h-20 w-full" /> : (
+                <p className="text-gray-700 leading-relaxed">
+                  "{content.vision}"
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -75,8 +135,8 @@ const AboutUs = () => {
           <p className="text-lg text-gray-700 mb-8 leading-relaxed">
             These certifications ensure that your contributions are utilized effectively and are eligible for tax exemptions as per Indian laws. We are committed to maintaining the highest standards of governance and accountability.
           </p>
-          <a href="/Aadiv_Certificates.pdf" download>
-            <Button className="bg-cta-green hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+          <a href={files.certificates_pdf?.url || '#'} download>
+            <Button disabled={loading} className="bg-cta-green hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
               Download Certificates →
             </Button>
           </a>

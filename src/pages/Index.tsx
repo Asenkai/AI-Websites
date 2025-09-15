@@ -12,10 +12,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 interface HomePageContent {
   hero_title: string;
   hero_subtitle: string;
+  featured_story_image: { url: string; alt: string };
 }
 
 const Index = () => {
-  const [content, setContent] = useState<HomePageContent | null>(null);
+  const [content, setContent] = useState<Partial<HomePageContent>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,7 +31,11 @@ const Index = () => {
         console.error("Error fetching homepage content:", error);
       } else {
         const formattedContent = data.reduce((acc, item) => {
-          acc[item.element_id] = item.content_data.text;
+          if (item.element_id.includes('_image')) {
+            acc[item.element_id] = item.content_data;
+          } else {
+            acc[item.element_id] = item.content_data.text;
+          }
           return acc;
         }, {} as any);
         setContent(formattedContent);
@@ -142,11 +147,13 @@ const Index = () => {
       <section className="py-16 bg-primary-teal text-white">
         <div className="container flex flex-col md:flex-row items-center gap-8">
           <div className="md:w-1/2">
-            <img
-              src="/placeholder.svg"
-              alt="Rohit, a child supported by Aadiv Care Foundation"
-              className="w-full h-auto rounded-lg shadow-xl object-cover"
-            />
+            {loading ? <Skeleton className="w-full h-80 rounded-lg" /> : (
+              <img
+                src={content.featured_story_image?.url || '/placeholder.svg'}
+                alt={content.featured_story_image?.alt || 'A child supported by Aadiv Care Foundation'}
+                className="w-full h-auto rounded-lg shadow-xl object-cover"
+              />
+            )}
           </div>
           <div className="md:w-1/2 text-center md:text-left">
             <h3 className="font-serif text-3xl md:text-4xl font-bold mb-4">A Story of Hope: Rohit's Journey</h3>

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { SectionTitle } from '@/components/shared/SectionTitle';
 import { StatCard } from '@/components/shared/StatCard';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Card, CardContent } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 
 const impactStats = [
   { value: '10,842+', label: 'Families Fed' },
@@ -37,6 +38,30 @@ const successStories = [
 ];
 
 const Impact = () => {
+  const [annualReportUrl, setAnnualReportUrl] = useState<string>('#');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFiles = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('page_content')
+        .select('content_data')
+        .eq('page_slug', 'downloads')
+        .eq('element_id', 'annual_report_pdf')
+        .single();
+
+      if (error) {
+        console.error("Error fetching annual report URL:", error);
+      } else if (data) {
+        setAnnualReportUrl(data.content_data.url);
+      }
+      setLoading(false);
+    };
+
+    fetchFiles();
+  }, []);
+
   return (
     <div className="font-sans">
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-24">
@@ -79,8 +104,8 @@ const Impact = () => {
           <p className="text-lg text-gray-700 mb-8">
             Access our detailed annual reports to understand our financial transparency, project progress, and future plans. Your trust is our greatest asset.
           </p>
-          <a href="/Aadiv_Annual_Report_2023.pdf" download>
-            <Button className="bg-cta-green hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+          <a href={annualReportUrl} download>
+            <Button disabled={loading} className="bg-cta-green hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
               Download Annual Report (PDF)
             </Button>
           </a>

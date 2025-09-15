@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { SectionTitle } from '@/components/shared/SectionTitle';
 import { TrustBadges } from '@/components/shared/TrustBadges';
 import { CSRProjectTable } from '@/components/shared/CSRProjectTable';
+import { supabase } from '@/integrations/supabase/client';
 
 const csrProjects = [
   { project: 'Education for Every Child', scheduleVIIClause: 'Item (ii)', description: 'Promoting education, including special education and employment enhancing vocation skills.' },
@@ -15,6 +16,30 @@ const csrProjects = [
 ];
 
 const CSRPartnership = () => {
+  const [csrDossierUrl, setCsrDossierUrl] = useState<string>('#');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFiles = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('page_content')
+        .select('content_data')
+        .eq('page_slug', 'downloads')
+        .eq('element_id', 'csr_dossier_pdf')
+        .single();
+
+      if (error) {
+        console.error("Error fetching CSR dossier URL:", error);
+      } else if (data) {
+        setCsrDossierUrl(data.content_data.url);
+      }
+      setLoading(false);
+    };
+
+    fetchFiles();
+  }, []);
+
   return (
     <div className="font-sans">
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-24">
@@ -84,8 +109,8 @@ const CSRPartnership = () => {
             We invite you to explore a meaningful partnership with Aadiv Care Foundation. Download our comprehensive CSR dossier or schedule a call with our team to discuss tailored programs for your organization.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <a href="/Aadiv_CSR_Dossier.pdf" download>
-              <Button variant="outline" className="border-2 border-primary-teal text-primary-teal hover:bg-primary-teal hover:text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+            <a href={csrDossierUrl} download>
+              <Button disabled={loading} variant="outline" className="border-2 border-primary-teal text-primary-teal hover:bg-primary-teal hover:text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
                 Download CSR Dossier
               </Button>
             </a>

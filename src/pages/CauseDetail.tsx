@@ -3,8 +3,20 @@ import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { SectionTitle } from '@/components/shared/SectionTitle';
 
+// Define a more specific type for a cause to avoid 'any' and potential build errors
+interface CauseData {
+  title: string;
+  heroImage: string;
+  problem: string;
+  solution: string;
+  impact: string;
+  unitCost: Array<{ amount: string; description: string }>;
+  galleryImages: Array<{ src: string; alt: string }>;
+  videoUrl: string;
+}
+
 // Dummy data for cause details
-const causeDetailsData: { [key: string]: any } = {
+const causeDetailsData: Record<string, CauseData> = {
   'education': {
     title: 'Education for Every Child',
     heroImage: '/placeholder.svg',
@@ -117,7 +129,7 @@ const causeDetailsData: { [key: string]: any } = {
 
 const CauseDetail = () => {
   const { causeId } = useParams<{ causeId: string }>();
-  const cause = causeDetailsData[causeId || ''];
+  const cause = causeId ? causeDetailsData[causeId] : undefined;
 
   if (!cause) {
     return (
@@ -180,7 +192,7 @@ const CauseDetail = () => {
           <div className="bg-gray-50 p-8 rounded-lg shadow-md mb-12 text-center">
             <h3 className="font-serif text-2xl font-bold text-primary-teal mb-6">How Your Donation Helps</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {cause.unitCost.map((item: { amount: string; description: string }, index: number) => (
+              {cause.unitCost.map((item, index) => (
                 <div key={index} className="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
                   <p className="text-2xl font-bold text-accent-yellow mb-1">{item.amount}</p>
                   <p className="text-gray-700 text-sm">{item.description}</p>
@@ -203,7 +215,7 @@ const CauseDetail = () => {
               className="mb-6"
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {cause.galleryImages.map((image: { src: string; alt: string }, index: number) => (
+              {cause.galleryImages.map((image, index) => (
                 <img
                   key={index}
                   src={image.src}

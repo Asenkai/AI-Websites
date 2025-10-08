@@ -13,13 +13,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form'; // Corrected import statement
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
 
 const loginFormSchema = z.object({
-  username: z.string().min(1, { message: 'Username is required.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
 
@@ -33,7 +33,7 @@ const Login = () => {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
-      username: '',
+      email: '',
       password: '',
     },
   });
@@ -53,14 +53,13 @@ const Login = () => {
     setIsSubmitting(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email: values.username, // Use username as email for Supabase
+        email: values.email,
         password: values.password,
       });
 
       if (error) {
         toast.error(error.message);
       } else {
-        // The useEffect hook will handle navigation after session updates
         toast.success('Logged in successfully!');
       }
     } catch (error: any) {
@@ -86,12 +85,12 @@ const Login = () => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
-              name="username"
+              name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>Email Address</FormLabel>
                   <FormControl>
-                    <Input placeholder="acfadmin" {...field} />
+                    <Input type="email" placeholder="admin@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

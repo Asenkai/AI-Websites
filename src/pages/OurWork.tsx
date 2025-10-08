@@ -1,57 +1,87 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SectionTitle } from '@/components/shared/SectionTitle';
 import { CauseCard } from '@/components/shared/CauseCard';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const causes = [
-  {
-    id: 'education',
-    title: 'Education for Every Child',
-    description: 'Providing access to quality education, school supplies, and tuition support for underprivileged children.',
-    imageUrl: '/placeholder.svg', // Replace with actual image
-  },
-  {
-    id: 'mental-health',
-    title: 'Mental Health & Therapy',
-    description: 'Offering free counseling, therapy sessions, and mental health awareness programs to communities in need.',
-    imageUrl: '/placeholder.svg', // Replace with actual image
-  },
-  {
-    id: 'hygiene',
-    title: 'Hygiene & Sanitization',
-    description: 'Distributing hygiene kits, promoting sanitation practices, and building community toilets for better health.',
-    imageUrl: '/placeholder.svg', // Replace with actual image
-  },
-  {
-    id: 'food-needs',
-    title: 'Food & Basic Needs',
-    description: 'Ensuring food security through meal distribution, ration kits, and providing essential supplies to vulnerable families.',
-    imageUrl: '/placeholder.svg', // Replace with actual image
-  },
-  {
-    id: 'elder-care',
-    title: 'Elder Care & Rehabilitation',
-    description: 'Providing shelter, medical care, and rehabilitation services for abandoned and needy elderly individuals.',
-    imageUrl: '/placeholder.svg', // Replace with actual image
-  },
-  {
-    id: 'animal-welfare',
-    title: 'Animal & Environment Welfare',
-    description: 'Working towards animal rescue, care, and promoting environmental conservation and sustainability initiatives.',
-    imageUrl: '/placeholder.svg', // Replace with actual image
-  },
-];
+interface Cause {
+  id: string;
+  title: string;
+  description: string;
+  hero_image_url: string; // Changed from imageUrl to hero_image_url
+  order: number;
+}
+
+interface OurWorkPageContent {
+  hero_title: string;
+  hero_subtitle: string;
+}
 
 const OurWork = () => {
+  const [pageContent, setPageContent] = useState<Partial<OurWorkPageContent>>({});
+  const [causes, setCauses] = useState<Cause[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      setLoading(true);
+      const { data: pageData, error: pageError } = await supabase
+        .from('page_content')
+        .select('element_id, content_data')
+        .eq('page_slug', 'our_work');
+
+      if (pageError) {
+        console.error("Error fetching Our Work page content:", pageError);
+      } else {
+        const formattedPageContent = pageData.reduce((acc, item) => {
+          acc[item.element_id] = item.content_data.text;
+          return acc;
+        }, {} as any);
+        setPageContent(formattedPageContent);
+      }
+
+      const { data: causesData, error: causesError } = await supabase
+        .from('causes') // Assuming a 'causes' table for dynamic cause data
+        .select('id, title, problem_statement, hero_image_url, order') // Select relevant fields
+        .order('order', { ascending: true });
+
+      if (causesError) {
+        console.error("Error fetching causes:", causesError);
+      } else {
+        // Map problem_statement to description for CauseCard
+        setCauses(causesData?.map(cause => ({
+          id: cause.id,
+          title: cause.title,
+          description: cause.problem_statement, // Using problem_statement as description
+          hero_image_url: cause.hero_image_url,
+          order: cause.order,
+        })) || []);
+      }
+      setLoading(false);
+    };
+
+    fetchContent();
+  }, []);
+
   return (
     <div className="font-sans">
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-24">
         <div className="container text-center relative z-10">
-          <h1 className="font-serif text-4xl md:text-5xl font-extrabold leading-tight mb-4">
-            Our Work: Making a Difference
-          </h1>
-          <p className="text-lg md:text-xl max-w-3xl mx-auto">
-            Explore the various causes we champion to bring positive change.
-          </p>
+          {loading ? (
+            <>
+              <Skeleton className="h-12 w-3/4 mx-auto mb-4" />
+              <Skeleton className="h-6 w-1/2 mx-auto" />
+            </>
+          ) : (
+            <>
+              <h1 className="font-serif text-4xl md:text-5xl font-extrabold leading-tight mb-4">
+                {pageContent.hero_title || 'Our Work: Making a Difference'}
+              </h1>
+              <p className="text-lg md:text-xl max-w-3xl mx-auto">
+                {pageContent.hero_subtitle || 'Explore the various causes we champion to bring positive change.'}
+              </p>
+            </>
+          )}
         </div>
       </section>
 
@@ -64,15 +94,21 @@ const OurWork = () => {
             className="mb-8"
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {causes.map((cause) => (
-              <CauseCard
-                key={cause.id}
-                id={cause.id}
-                title={cause.title}
-                description={cause.description}
-                imageUrl={cause.imageUrl}
-              />
-            ))}
+            {loading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="w-full h-72 rounded-lg" />
+              ))
+            ) : (
+              causes.map((cause) => (
+                <CauseCard
+                  key={cause.id}
+                  id={cause.id}
+                  title={cause.title}
+                  description={cause.description}
+                  imageUrl={cause.hero_image_url || '/placeholder.svg'}
+                />
+              ))
+            )}
           </div>
         </div>
       </section>

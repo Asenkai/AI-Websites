@@ -6,14 +6,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/SessionContext';
 
 const Login = () => {
-  const { session } = useSession();
+  const { session, user } = useSession();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (session) {
+    if (session && user?.profile?.role === 'admin') {
       navigate('/admin');
+    } else if (session && user?.profile?.role !== 'admin') {
+      // If logged in but not admin, redirect to home
+      navigate('/');
     }
-  }, [session, navigate]);
+  }, [session, user, navigate]);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50">
@@ -24,10 +27,11 @@ const Login = () => {
         </div>
         <Auth
           supabaseClient={supabase}
+          providers={[]} // Only allow email/password for admin login
           appearance={{ theme: ThemeSupa }}
           view="sign_in"
           theme="light"
-          showLinks={false}
+          showLinks={false} // Hide sign-up and magic link options
         />
       </div>
     </div>

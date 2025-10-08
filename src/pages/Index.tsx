@@ -13,6 +13,8 @@ interface HomePageContent {
   hero_title: string;
   hero_subtitle: string;
   featured_story_image: { url: string; alt: string };
+  csr_dossier_button: { text: string; link: string };
+  book_call_button: { text: string; link: string };
 }
 
 const Index = () => {
@@ -31,7 +33,7 @@ const Index = () => {
         console.error("Error fetching homepage content:", error);
       } else {
         const formattedContent = data.reduce((acc, item) => {
-          if (item.element_id.includes('_image')) {
+          if (item.element_id.includes('_image') || item.element_id.includes('_button')) {
             acc[item.element_id] = item.content_data;
           } else {
             acc[item.element_id] = item.content_data.text;
@@ -215,16 +217,24 @@ const Index = () => {
             Our projects range from ₹20 Lakhs to ₹5 Crores, are Schedule VII compliant, and come with quarterly reporting for full transparency.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <a href="/Aadiv_CSR_Dossier.pdf" download>
-              <Button className="bg-white text-primary-teal hover:bg-gray-100 border border-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-                Download CSR Dossier
-              </Button>
-            </a>
-            <Link to="/contact">
-              <Button className="bg-accent-yellow hover:bg-yellow-600 text-primary-teal font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-                Book a Call
-              </Button>
-            </Link>
+            {loading ? (
+              <Skeleton className="h-12 w-48 rounded-full" />
+            ) : (
+              <a href={content.csr_dossier_button?.link || '#'} download>
+                <Button className="bg-white text-primary-teal hover:bg-gray-100 border border-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+                  {content.csr_dossier_button?.text || 'Download CSR Dossier'}
+                </Button>
+              </a>
+            )}
+            {loading ? (
+              <Skeleton className="h-12 w-48 rounded-full" />
+            ) : (
+              <Link to={content.book_call_button?.link || '/contact'}>
+                <Button className="bg-accent-yellow hover:bg-yellow-600 text-primary-teal font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+                  {content.book_call_button?.text || 'Book a Call'}
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>

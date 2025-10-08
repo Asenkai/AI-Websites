@@ -7,19 +7,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface AboutPageContent {
+  hero_title: string;
+  hero_subtitle: string;
   story_p1: string;
   story_p2: string;
   mission: string;
   vision: string;
-}
-
-interface DownloadableFiles {
-    certificates_pdf: { url: string };
+  certificates_button: { text: string; link: string };
 }
 
 const AboutUs = () => {
   const [content, setContent] = useState<Partial<AboutPageContent>>({});
-  const [files, setFiles] = useState<Partial<DownloadableFiles>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,22 +26,21 @@ const AboutUs = () => {
       const { data, error } = await supabase
         .from('page_content')
         .select('element_id, content_data')
-        .in('page_slug', ['about', 'downloads']);
+        .eq('page_slug', 'about');
 
       if (error) {
         console.error("Error fetching content:", error);
       } else {
         const formattedContent = data.reduce((acc, item) => {
-          if (item.element_id.includes('_pdf')) {
-            acc.files[item.element_id] = item.content_data;
+          if (item.element_id.includes('_button')) {
+            acc[item.element_id] = item.content_data;
           } else {
-            acc.content[item.element_id] = item.content_data.text;
+            acc[item.element_id] = item.content_data.text;
           }
           return acc;
-        }, { content: {}, files: {} } as any);
+        }, {} as any);
         
-        setContent(formattedContent.content);
-        setFiles(formattedContent.files);
+        setContent(formattedContent);
       }
       setLoading(false);
     };
@@ -55,12 +52,21 @@ const AboutUs = () => {
     <div className="font-sans">
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-24">
         <div className="container text-center relative z-10">
-          <h1 className="font-serif text-4xl md:text-5xl font-extrabold leading-tight mb-4">
-            About Aadiv Care Foundation
-          </h1>
-          <p className="text-lg md:text-xl max-w-3xl mx-auto">
-            Our Journey of Compassion and Impact
-          </p>
+          {loading ? (
+            <>
+              <Skeleton className="h-12 w-3/4 mx-auto mb-4" />
+              <Skeleton className="h-6 w-1/2 mx-auto" />
+            </>
+          ) : (
+            <>
+              <h1 className="font-serif text-4xl md:text-5xl font-extrabold leading-tight mb-4">
+                {content.hero_title || 'About Aadiv Care Foundation'}
+              </h1>
+              <p className="text-lg md:text-xl max-w-3xl mx-auto">
+                {content.hero_subtitle || 'Our Journey of Compassion and Impact'}
+              </p>
+            </>
+          )}
         </div>
       </section>
 
@@ -135,11 +141,15 @@ const AboutUs = () => {
           <p className="text-lg text-gray-700 mb-8 leading-relaxed">
             These certifications ensure that your contributions are utilized effectively and are eligible for tax exemptions as per Indian laws. We are committed to maintaining the highest standards of governance and accountability.
           </p>
-          <a href={files.certificates_pdf?.url || '#'} download>
-            <Button disabled={loading} className="bg-cta-green hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-              Download Certificates →
-            </Button>
-          </a>
+          {loading ? (
+            <Skeleton className="h-12 w-64 mx-auto rounded-full" />
+          ) : (
+            <a href={content.certificates_button?.link || '#'} download>
+              <Button disabled={loading} className="bg-cta-green hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+                {content.certificates_button?.text || 'Download Certificates →'}
+              </Button>
+            </a>
+          )}
         </div>
       </section>
     </div>

@@ -6,6 +6,14 @@ import { StatCard } from '@/components/shared/StatCard';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
+
+interface ImpactPageContent {
+  hero_title: string;
+  hero_subtitle: string;
+  annual_report_button: { text: string; link: string };
+  video_url: string;
+}
 
 const impactStats = [
   { value: '10,842+', label: 'Families Fed' },
@@ -38,40 +46,58 @@ const successStories = [
 ];
 
 const Impact = () => {
-  const [annualReportUrl, setAnnualReportUrl] = useState<string>('#');
+  const [content, setContent] = useState<Partial<ImpactPageContent>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFiles = async () => {
+    const fetchContent = async () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('page_content')
-        .select('content_data')
-        .eq('page_slug', 'downloads')
-        .eq('element_id', 'annual_report_pdf')
-        .single();
+        .select('element_id, content_data')
+        .eq('page_slug', 'impact');
 
       if (error) {
-        console.error("Error fetching annual report URL:", error);
-      } else if (data) {
-        setAnnualReportUrl(data.content_data.url);
+        console.error("Error fetching impact page content:", error);
+      } else {
+        const formattedContent = data.reduce((acc, item) => {
+          if (item.element_id.includes('_button')) {
+            acc[item.element_id] = item.content_data;
+          } else if (item.element_id === 'video_url') {
+            acc[item.element_id] = item.content_data.url;
+          }
+          else {
+            acc[item.element_id] = item.content_data.text;
+          }
+          return acc;
+        }, {} as any);
+        setContent(formattedContent);
       }
       setLoading(false);
     };
 
-    fetchFiles();
+    fetchContent();
   }, []);
 
   return (
     <div className="font-sans">
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-24">
         <div className="container text-center relative z-10">
-          <h1 className="font-serif text-4xl md:text-5xl font-extrabold leading-tight mb-4">
-            Our Impact: Stories of Change
-          </h1>
-          <p className="text-lg md:text-xl max-w-3xl mx-auto">
-            See how your support is transforming lives and building a better future.
-          </p>
+          {loading ? (
+            <>
+              <Skeleton className="h-12 w-3/4 mx-auto mb-4" />
+              <Skeleton className="h-6 w-1/2 mx-auto" />
+            </>
+          ) : (
+            <>
+              <h1 className="font-serif text-4xl md:text-5xl font-extrabold leading-tight mb-4">
+                {content.hero_title || 'Our Impact: Stories of Change'}
+              </h1>
+              <p className="text-lg md:text-xl max-w-3xl mx-auto">
+                {content.hero_subtitle || 'See how your support is transforming lives and building a better future.'}
+              </p>
+            </>
+          )}
         </div>
       </section>
 
@@ -104,11 +130,15 @@ const Impact = () => {
           <p className="text-lg text-gray-700 mb-8">
             Access our detailed annual reports to understand our financial transparency, project progress, and future plans. Your trust is our greatest asset.
           </p>
-          <a href={annualReportUrl} download>
-            <Button disabled={loading} className="bg-cta-green hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-              Download Annual Report (PDF)
-            </Button>
-          </a>
+          {loading ? (
+            <Skeleton className="h-12 w-64 mx-auto rounded-full" />
+          ) : (
+            <a href={content.annual_report_button?.link || '#'} download>
+              <Button disabled={loading} className="bg-cta-green hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+                {content.annual_report_button?.text || 'Download Annual Report (PDF)'}
+              </Button>
+            </a>
+          )}
         </div>
       </section>
 
@@ -158,15 +188,19 @@ const Impact = () => {
             className="mb-8"
           />
           <div className="aspect-video w-full rounded-lg overflow-hidden shadow-xl">
-            <iframe
-              width="100%"
-              height="100%"
-              src="https://www.youtube.com/embed/dQw4w9WgXcQ" // Placeholder YouTube video
-              title="Aadiv Care Foundation Impact Video"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
+            {loading ? (
+              <Skeleton className="w-full h-full" />
+            ) : (
+              <iframe
+                width="100%"
+                height="100%"
+                src={content.video_url || "https://www.youtube.com/embed/dQw4w9WgXcQ"} // Placeholder YouTube video
+                title="Aadiv Care Foundation Impact Video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            )}
           </div>
           <p className="text-sm text-gray-600 mt-4">
             Watch our video to get a glimpse of the lives we touch and the communities we empower.

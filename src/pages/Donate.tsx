@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,18 +8,64 @@ import { SectionTitle } from '@/components/shared/SectionTitle';
 import { DonationPresetCard } from '@/components/shared/DonationPresetCard';
 import { toast } from 'sonner';
 import { QrCode, CreditCard, Banknote, Wallet } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const donationPresets = [
-  { amount: 199, description: 'Feed a family' },
-  { amount: 499, description: 'Fund therapy session' },
-  { amount: 999, description: 'Elder care for a day' },
-  { amount: 1999, description: 'School kit + tuition' },
-];
+interface DonationPreset {
+  amount: number;
+  description: string;
+}
+
+interface DonatePageContent {
+  hero_title: string;
+  hero_subtitle: string;
+  donation_presets: DonationPreset[];
+  upi_qr_image: { url: string; alt: string };
+  upi_id: string;
+  razorpay_button: { text: string; link: string };
+  ketto_button: { text: string; link: string };
+  giveindia_button: { text: string; link: string };
+  legal_note: string;
+}
 
 const Donate = () => {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [isMonthly, setIsMonthly] = useState<boolean>(false);
+  const [content, setContent] = useState<Partial<DonatePageContent>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('page_content')
+        .select('element_id, content_data')
+        .eq('page_slug', 'donate');
+
+      if (error) {
+        console.error("Error fetching donate page content:", error);
+      } else {
+        const formattedContent = data.reduce((acc, item) => {
+          if (item.element_id.includes('_image')) {
+            acc[item.element_id] = item.content_data;
+          } else if (item.element_id.includes('_button')) {
+            acc[item.element_id] = item.content_data;
+          } else if (item.element_id === 'donation_presets') {
+            acc[item.element_id] = item.content_data.presets; // Assuming content_data has a 'presets' array
+          }
+          else {
+            acc[item.element_id] = item.content_data.text;
+          }
+          return acc;
+        }, {} as any);
+        setContent(formattedContent);
+      }
+      setLoading(false);
+    };
+
+    fetchContent();
+  }, []);
 
   const handleAmountSelect = (amount: number) => {
     setSelectedAmount(amount);
@@ -55,12 +101,21 @@ const Donate = () => {
     <div className="font-sans">
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-24">
         <div className="container text-center relative z-10">
-          <h1 className="font-serif text-4xl md:text-5xl font-extrabold leading-tight mb-4">
-            Every ₹100 Counts — Give Now
-          </h1>
-          <p className="text-lg md:text-xl max-w-3xl mx-auto">
-            Your generosity fuels our mission and brings hope to those who need it most.
-          </p>
+          {loading ? (
+            <>
+              <Skeleton className="h-12 w-3/4 mx-auto mb-4" />
+              <Skeleton className="h-6 w-1/2 mx-auto" />
+            </>
+          ) : (
+            <>
+              <h1 className="font-serif text-4xl md:text-5xl font-extrabold leading-tight mb-4">
+                {content.hero_title || 'Every ₹100 Counts — Give Now'}
+              </h1>
+              <p className="text-lg md:text-xl max-w-3xl mx-auto">
+                {content.hero_subtitle || 'Your generosity fuels our mission and brings hope to those who need it most.'}
+              </p>
+            </>
+          )}
         </div>
       </section>
 
@@ -74,15 +129,21 @@ const Donate = () => {
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-            {donationPresets.map((preset) => (
-              <DonationPresetCard
-                key={preset.amount}
-                amount={preset.amount}
-                description={preset.description}
-                isSelected={selectedAmount === preset.amount}
-                onClick={handleAmountSelect}
-              />
-            ))}
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 w-full" />
+              ))
+            ) : (
+              (content.donation_presets || []).map((preset) => (
+                <DonationPresetCard
+                  key={preset.amount}
+                  amount={preset.amount}
+                  description={preset.description}
+                  isSelected={selectedAmount === preset.amount}
+                  onClick={handleAmountSelect}
+                />
+              ))
+            )}
           </div>
 
           <div className="mb-8">
@@ -126,40 +187,67 @@ const Donate = () => {
                 <QrCode size={48} className="text-primary-teal mb-4" />
                 <h4 className="font-semibold text-xl text-gray-800 mb-2">UPI / Paytm QR</h4>
                 <p className="text-gray-600 text-sm mb-4">Scan to donate instantly via any UPI app or Paytm.</p>
-                <img src="/placeholder.svg" alt="UPI QR Code" className="w-32 h-32 object-contain mb-4" />
-                <p className="text-sm text-gray-500">UPI ID: aadivcare@upi</p>
+                {loading ? (
+                  <Skeleton className="w-32 h-32 mb-4" />
+                ) : (
+                  <img src={content.upi_qr_image?.url || '/placeholder.svg'} alt={content.upi_qr_image?.alt || 'UPI QR Code'} className="w-32 h-32 object-contain mb-4" />
+                )}
+                {loading ? (
+                  <Skeleton className="h-4 w-2/3" />
+                ) : (
+                  <p className="text-sm text-gray-500">UPI ID: {content.upi_id || 'aadivcare@upi'}</p>
+                )}
               </div>
               <div className="p-6 bg-gray-100 rounded-lg shadow-sm flex flex-col items-center">
                 <CreditCard size={48} className="text-primary-teal mb-4" />
                 <h4 className="font-semibold text-xl text-gray-800 mb-2">Cards / NetBanking / Razorpay</h4>
                 <p className="text-gray-600 text-sm mb-4">Securely donate using your credit/debit card or net banking.</p>
-                <Button variant="outline" className="w-full border-primary-teal text-primary-teal hover:bg-primary-teal hover:text-white">
-                  Pay via Razorpay (Simulated)
-                </Button>
+                {loading ? (
+                  <Skeleton className="h-10 w-full" />
+                ) : (
+                  <a href={content.razorpay_button?.link || '#'} target="_blank" rel="noopener noreferrer" className="w-full">
+                    <Button variant="outline" className="w-full border-primary-teal text-primary-teal hover:bg-primary-teal hover:text-white">
+                      {content.razorpay_button?.text || 'Pay via Razorpay (Simulated)'}
+                    </Button>
+                  </a>
+                )}
               </div>
               <div className="p-6 bg-gray-100 rounded-lg shadow-sm flex flex-col items-center">
                 <Wallet size={48} className="text-primary-teal mb-4" />
                 <h4 className="font-semibold text-xl text-gray-800 mb-2">Fundraisers</h4>
                 <p className="text-gray-600 text-sm mb-4">Start or contribute to a fundraiser on our partner platforms.</p>
                 <div className="flex gap-4">
-                  <a href="https://www.ketto.org/aadivcarefoundation" target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" className="border-accent-yellow text-accent-yellow hover:bg-accent-yellow hover:text-primary-teal">
-                      Ketto
-                    </Button>
-                  </a>
-                  <a href="https://www.giveindia.org/aadivcarefoundation" target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" className="border-accent-yellow text-accent-yellow hover:bg-accent-yellow hover:text-primary-teal">
-                      GiveIndia
-                    </Button>
-                  </a>
+                  {loading ? (
+                    <>
+                      <Skeleton className="h-10 w-24" />
+                      <Skeleton className="h-10 w-24" />
+                    </>
+                  ) : (
+                    <>
+                      <a href={content.ketto_button?.link || "https://www.ketto.org/aadivcarefoundation"} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" className="border-accent-yellow text-accent-yellow hover:bg-accent-yellow hover:text-primary-teal">
+                          {content.ketto_button?.text || 'Ketto'}
+                        </Button>
+                      </a>
+                      <a href={content.giveindia_button?.link || "https://www.giveindia.org/aadivcarefoundation"} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" className="border-accent-yellow text-accent-yellow hover:bg-accent-yellow hover:text-primary-teal">
+                          {content.giveindia_button?.text || 'GiveIndia'}
+                        </Button>
+                      </a>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          <p className="text-sm text-gray-600 mt-12 text-center">
-            <span className="font-bold text-primary-teal">Legal Note:</span> All donations to Aadiv Care Foundation are eligible for 80G tax exemption under the Income Tax Act, 1961.
-          </p>
+          {loading ? (
+            <Skeleton className="h-12 w-full mx-auto mt-12" />
+          ) : (
+            <p className="text-sm text-gray-600 mt-12 text-center">
+              <span className="font-bold text-primary-teal">Legal Note:</span> {content.legal_note || 'All donations to Aadiv Care Foundation are eligible for 80G tax exemption under the Income Tax Act, 1961.'}
+            </p>
+          )}
         </div>
       </section>
     </div>

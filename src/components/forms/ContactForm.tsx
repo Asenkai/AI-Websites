@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Button } from '@/components/ui/button';
+import { Button } => '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -14,6 +14,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { toast } from 'sonner';
+// No direct import of supabase needed for its URL here, as we use the env var
+// import { supabase } from '@/integrations/supabase/client'; 
 
 const contactFormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -37,9 +39,14 @@ export const ContactForm = () => {
 
   const onSubmit = async (values: ContactFormValues) => {
     try {
-      // Replace with your actual Supabase Project ID and Edge Function name
-      const SUPABASE_PROJECT_ID = 'oaevwtrmhcllezptagsf';
+      // Directly use the environment variable for the Supabase URL
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      if (!supabaseUrl) {
+        throw new Error('VITE_SUPABASE_URL is not defined.');
+      }
+      const SUPABASE_PROJECT_ID = supabaseUrl.split('.')[0].split('//')[1];
       const EDGE_FUNCTION_NAME = 'contact-form';
+      
       const response = await fetch(
         `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/${EDGE_FUNCTION_NAME}`,
         {

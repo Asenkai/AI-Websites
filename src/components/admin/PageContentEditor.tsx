@@ -142,7 +142,8 @@ const PageContentEditor = ({ pageSlug, title }: PageContentEditorProps) => {
   };
 
   const renderContentItem = (item: ContentItem) => {
-    const isFile = item.element_id.includes('_pdf') || item.element_id.includes('_image');
+    const isImage = item.element_id.includes('_image');
+    const isPdf = item.element_id.includes('_pdf') || item.element_id === 'csr_dossier_button'; // Treat csr_dossier_button as a PDF upload
     const isButton = item.element_id.includes('_button');
     const isDonationPresets = item.element_id === 'donation_presets';
     const isVolunteerRoles = item.element_id === 'volunteer_roles';
@@ -153,7 +154,7 @@ const PageContentEditor = ({ pageSlug, title }: PageContentEditorProps) => {
       <div key={item.id} className="space-y-2 p-4 border rounded-md bg-gray-50">
         <Label htmlFor={item.id} className="capitalize font-medium text-gray-800">{item.element_id.replace(/_/g, ' ')}</Label>
         <div className="flex flex-col gap-2">
-          {item.content_data.text !== undefined && !isVolunteerRoles && (
+          {item.content_data.text !== undefined && !isVolunteerRoles && !isPdf && (
             <Textarea
               id={item.id}
               value={item.content_data.text}
@@ -170,33 +171,48 @@ const PageContentEditor = ({ pageSlug, title }: PageContentEditorProps) => {
               rows={5}
             />
           )}
-          {isFile && (
+          {(isImage || isPdf) && (
             <div className="flex items-center gap-4">
               <Input
                 type="file"
                 onChange={(e) => handleFileChange(e, item, 'url')}
                 disabled={uploading === item.id}
+                accept={isPdf ? ".pdf" : "image/*"}
               />
               {uploading === item.id && <p className="text-sm text-gray-500">Uploading...</p>}
               {item.content_data.url && (
                 <a href={item.content_data.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline whitespace-nowrap">
-                  View Current
+                  View Current {isPdf ? 'PDF' : 'Image'}
                 </a>
               )}
             </div>
           )}
-          {item.element_id.includes('_image') && (
+          {isImage && (
              <Input
                 placeholder="Image Alt Text"
                 value={item.content_data.alt || ''}
                 onChange={(e) => handleContentChange(item.id, 'alt', e.target.value)}
               />
           )}
-          {(isButton || isMapEmbed || isVideoUrl) && (
+          {isButton && (
+            <>
+              <Input
+                placeholder="Button Text"
+                value={item.content_data.text || ''}
+                onChange={(e) => handleContentChange(item.id, 'text', e.target.value)}
+              />
+              <Input
+                placeholder="Button Link (e.g., /donate or https://external.com)"
+                value={item.content_data.link || ''}
+                onChange={(e) => handleContentChange(item.id, 'link', e.target.value)}
+              />
+            </>
+          )}
+          {(isMapEmbed || isVideoUrl) && (
             <Input
-              placeholder={isButton ? "Button Link (e.g., /donate or https://external.com)" : isMapEmbed ? "Google Maps Embed URL" : "YouTube Video URL"}
-              value={item.content_data.link || item.content_data.url || ''}
-              onChange={(e) => handleContentChange(item.id, isButton ? 'link' : 'url', e.target.value)}
+              placeholder={isMapEmbed ? "Google Maps Embed URL" : "YouTube Video URL"}
+              value={item.content_data.url || ''}
+              onChange={(e) => handleContentChange(item.id, 'url', e.target.value)}
             />
           )}
           {isDonationPresets && (

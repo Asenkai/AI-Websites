@@ -17,7 +17,7 @@ interface CSRPartnershipPageContent {
   schedule_vii_description: string;
   transparent_reporting_title: string;
   transparent_reporting_description: string;
-  csr_dossier_button: { text: string; link: string };
+  csr_dossier_button: { text: string; link: string; url?: string }; // Added url for PDF
   book_call_button: { text: string; link: string };
 }
 
@@ -146,7 +146,7 @@ const CSRPartnership = () => {
             {loading ? (
               <Skeleton className="h-12 w-64 mx-auto rounded-full" />
             ) : (
-              <a href={content.csr_dossier_button?.link || '#'} download>
+              <a href={content.csr_dossier_button?.url || '#'} download> {/* Use url for download */}
                 <Button disabled={loading} variant="outline" className="border-2 border-primary-teal text-primary-teal hover:bg-primary-teal hover:text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
                   {content.csr_dossier_button?.text || 'Download CSR Dossier'}
                 </Button>

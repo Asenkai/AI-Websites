@@ -13,7 +13,7 @@ interface HomePageContent {
   hero_title: string;
   hero_subtitle: string;
   featured_story_image: { url: string; alt: string };
-  csr_dossier_button: { text: string; link: string };
+  csr_dossier_button: { text: string; link: string; url?: string }; // Added url for PDF
   book_call_button: { text: string; link: string };
 }
 
@@ -220,7 +220,7 @@ const Index = () => {
             {loading ? (
               <Skeleton className="h-12 w-48 rounded-full" />
             ) : (
-              <a href={content.csr_dossier_button?.link || '#'} download>
+              <a href={content.csr_dossier_button?.url || '#'} download> {/* Use url for download */}
                 <Button className="bg-white text-primary-teal hover:bg-gray-100 border border-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
                   {content.csr_dossier_button?.text || 'Download CSR Dossier'}
                 </Button>

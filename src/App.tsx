@@ -19,7 +19,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { SessionProvider } from "./contexts/SessionContext";
 import { AdminLayout } from "./components/layout/AdminLayout";
-import { GoogleTagManager } from "./components/integrations/GoogleTagManager"; // Corrected path
+import { GoogleTagManager } from "./components/integrations/GoogleTagManager";
+import { AnalyticsTracker } from "./components/integrations/AnalyticsTracker"; // New import
 
 // Admin Content Pages
 import NavigationMenuPage from "./pages/admin/content/NavigationMenuPage";
@@ -34,7 +35,7 @@ import CSRPartnershipContentPage from "./pages/admin/content/CSRPartnershipConte
 import ContactContentPage from "./pages/admin/content/ContactContentPage";
 
 // Admin Settings Pages
-import GoogleTagPage from "./pages/admin/settings/GoogleTagPage"; // Corrected path
+import GoogleTagPage from "./pages/admin/settings/GoogleTagPage";
 
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <AnalyticsTracker />
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<Index />} />

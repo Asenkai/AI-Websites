@@ -1,9 +1,3 @@
-# Allow all friendly crawlers
 User-agent: *
 Allow: /
-
-# Disallow crawlers from accessing the admin section
-Disallow: /admin/
-
-# Point crawlers to the sitemap location
 Sitemap: https://mknblhhdbbpleejkmfkx.supabase.co/functions/v1/sitemap

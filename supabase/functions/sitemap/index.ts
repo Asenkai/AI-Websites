@@ -9,8 +9,8 @@ const corsHeaders = {
   'Content-Type': 'application/xml',
 };
 
-// IMPORTANT: Replace this with your actual website domain
-const SITE_URL = 'https://www.your-domain.com';
+// NOTE: If you connect a custom domain, please update this URL.
+const SITE_URL = 'https://mknblhhdbbpleejkmfkx.supabase.co';
 
 serve(async (_req: Request) => {
   // Handle CORS preflight request

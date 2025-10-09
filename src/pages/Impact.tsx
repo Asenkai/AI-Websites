@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 interface ImpactPageContent {
   hero_title: string;
   hero_subtitle: string;
-  annual_report_button: { text: string; link: string };
+  annual_report_button: { text: string; link: string; url?: string }; // Added url for PDF
   video_url: string;
 }
 
@@ -132,7 +132,7 @@ const Impact = () => {
           {loading ? (
             <Skeleton className="h-12 w-64 mx-auto rounded-full" />
           ) : (
-            <a href={content.annual_report_button?.link || '#'} download>
+            <a href={content.annual_report_button?.url || '#'} download>
               <Button disabled={loading} className="bg-cta-green hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
                 {content.annual_report_button?.text || 'Download Annual Report (PDF)'}
               </Button>

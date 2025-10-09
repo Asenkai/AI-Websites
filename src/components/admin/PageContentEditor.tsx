@@ -143,7 +143,10 @@ const PageContentEditor = ({ pageSlug, title }: PageContentEditorProps) => {
 
   const renderContentItem = (item: ContentItem) => {
     const isImage = item.element_id.includes('_image');
-    const isPdf = item.element_id.includes('_pdf') || item.element_id === 'csr_dossier_button'; // Treat csr_dossier_button as a PDF upload
+    const isPdf = item.element_id.includes('_pdf') || 
+                  item.element_id === 'csr_dossier_button' || 
+                  item.element_id === 'certificates_button' || 
+                  item.element_id === 'annual_report_button';
     const isButton = item.element_id.includes('_button');
     const isDonationPresets = item.element_id === 'donation_presets';
     const isVolunteerRoles = item.element_id === 'volunteer_roles';

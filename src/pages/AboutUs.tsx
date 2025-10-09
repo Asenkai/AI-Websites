@@ -12,7 +12,7 @@ interface AboutPageContent {
   story_p2: string;
   mission: string;
   vision: string;
-  certificates_button: { text: string; link: string };
+  certificates_button: { text: string; link: string; url?: string }; // Added url for PDF
 }
 
 const AboutUs = () => {
@@ -143,7 +143,7 @@ const AboutUs = () => {
           {loading ? (
             <Skeleton className="h-12 w-64 mx-auto rounded-full" />
           ) : (
-            <a href={content.certificates_button?.link || '#'} download>
+            <a href={content.certificates_button?.url || '#'} download>
               <Button disabled={loading} className="bg-cta-green hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
                 {content.certificates_button?.text || 'Download Certificates →'}
               </Button>

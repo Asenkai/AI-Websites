@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { SectionTitle } from '@/components/shared/SectionTitle';
 import { DonationPresetCard } from '@/components/shared/DonationPresetCard';
 import { toast } from 'sonner';
-import { QrCode, CreditCard, Wallet } from 'lucide-react'; // Removed Banknote
+import { QrCode, Wallet } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MetaTags } from '@/components/shared/MetaTags';
@@ -34,37 +34,52 @@ const Donate = () => {
   const [isMonthly, setIsMonthly] = useState<boolean>(false);
   const [content, setContent] = useState<Partial<DonatePageContent>>({});
   const [loading, setLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [razorpayKeyId, setRazorpayKeyId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchContent = async () => {
+    const fetchContentAndKey = async () => {
       setLoading(true);
-      const { data, error } = await supabase
+      // Fetch page content
+      const { data: pageData, error: pageError } = await supabase
         .from('page_content')
         .select('element_id, content_data')
         .eq('page_slug', 'donate');
 
-      if (error) {
-        console.error("Error fetching donate page content:", error);
+      if (pageError) {
+        console.error("Error fetching donate page content:", pageError);
       } else {
-        const formattedContent = data.reduce((acc, item) => {
-          if (item.element_id.includes('_image')) {
-            acc[item.element_id] = item.content_data;
-          } else if (item.element_id.includes('_button')) {
+        const formattedContent = pageData.reduce((acc, item) => {
+          if (item.element_id.includes('_image') || item.element_id.includes('_button')) {
             acc[item.element_id] = item.content_data;
           } else if (item.element_id === 'donation_presets') {
-            acc[item.element_id] = item.content_data.presets; // Assuming content_data has a 'presets' array
-          }
-          else {
+            acc[item.element_id] = item.content_data.presets;
+          } else {
             acc[item.element_id] = item.content_data.text;
           }
           return acc;
         }, {} as any);
         setContent(formattedContent);
       }
+
+      // Fetch Razorpay Key ID
+      const { data: keyData, error: keyError } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'razorpay_key_id')
+        .single();
+      
+      if (keyError && keyError.code !== 'PGRST116') {
+        console.error("Error fetching Razorpay Key ID:", keyError);
+        toast.error("Could not initialize payment gateway.");
+      } else if (keyData) {
+        setRazorpayKeyId(keyData.value);
+      }
+
       setLoading(false);
     };
 
-    fetchContent();
+    fetchContentAndKey();
   }, []);
 
   const handleAmountSelect = (amount: number) => {
@@ -74,27 +89,76 @@ const Donate = () => {
 
   const handleCustomAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (/^\d*$/.test(value)) { // Only allow digits
+    if (/^\d*$/.test(value)) {
       setCustomAmount(value);
-      setSelectedAmount(null); // Deselect presets if custom amount is typed
+      setSelectedAmount(null);
     }
   };
 
   const finalAmount = selectedAmount || (customAmount ? parseInt(customAmount) : 0);
 
-  const handleDonate = () => {
+  const handleDonate = async () => {
     if (finalAmount <= 0) {
       toast.error('Please enter a valid donation amount.');
       return;
     }
-    // Simulate donation process
-    toast.success(`Thank you for your donation of ₹${finalAmount.toLocaleString('en-IN')}!`);
-    console.log(`Donating ₹${finalAmount} ${isMonthly ? 'monthly' : 'once'}`);
-    // In a real app, this would trigger payment gateway
-    // For now, we'll just reset the form
-    setSelectedAmount(null);
-    setCustomAmount('');
-    setIsMonthly(false);
+    if (!razorpayKeyId) {
+      toast.error('Payment gateway is not configured. Please contact support.');
+      return;
+    }
+
+    setIsProcessing(true);
+    const loadingToast = toast.loading('Initializing payment...');
+
+    try {
+      const { data: order, error } = await supabase.functions.invoke('create-razorpay-order', {
+        body: { amount: finalAmount },
+      });
+
+      if (error) throw new Error(error.message);
+      if (order.error) throw new Error(order.error);
+
+      toast.dismiss(loadingToast);
+
+      const options = {
+        key: razorpayKeyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'Aadiv Care Foundation',
+        description: `Donation for ${isMonthly ? 'Monthly Support' : 'a Cause'}`,
+        order_id: order.id,
+        handler: function (response: any) {
+          toast.success('Thank you! Your donation was successful.');
+          console.log('Payment successful:', response);
+          // Here you would typically save the payment details to your database
+        },
+        prefill: {
+          name: '', // You can prefill user details if they are logged in
+          email: '',
+          contact: '',
+        },
+        notes: {
+          type: isMonthly ? 'monthly_donation' : 'one_time_donation',
+        },
+        theme: {
+          color: '#0F766E', // primary-teal color
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response: any) {
+        toast.error('Payment failed. Please try again.');
+        console.error('Payment failed:', response.error);
+      });
+      rzp.open();
+
+    } catch (error: any) {
+      console.error('Donation process error:', error);
+      toast.error(`Failed to initiate payment: ${error.message}`);
+      toast.dismiss(loadingToast);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -156,7 +220,7 @@ const Donate = () => {
             </Label>
             <Input
               id="custom-amount"
-              type="text" // Use text to control input, then parse to int
+              type="text"
               placeholder="e.g., 5000"
               value={customAmount}
               onChange={handleCustomAmountChange}
@@ -179,9 +243,9 @@ const Donate = () => {
           <Button
             onClick={handleDonate}
             className="w-full bg-cta-green hover:bg-green-700 text-white font-bold py-4 rounded-lg text-xl shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105"
-            disabled={finalAmount <= 0}
+            disabled={finalAmount <= 0 || isProcessing || loading}
           >
-            Donate Now (₹{finalAmount.toLocaleString('en-IN')})
+            {isProcessing ? 'Processing...' : `Donate Now (₹${finalAmount.toLocaleString('en-IN')})`}
           </Button>
 
           <div className="mt-10 text-center">
@@ -202,21 +266,7 @@ const Donate = () => {
                   <p className="text-sm text-gray-500">UPI ID: {content.upi_id || 'aadivcare@upi'}</p>
                 )}
               </div>
-              <div className="p-6 bg-gray-100 rounded-lg shadow-sm flex flex-col items-center">
-                <CreditCard size={48} className="text-primary-teal mb-4" />
-                <h4 className="font-semibold text-xl text-gray-800 mb-2">Cards / NetBanking / Razorpay</h4>
-                <p className="text-gray-600 text-sm mb-4">Securely donate using your credit/debit card or net banking.</p>
-                {loading ? (
-                  <Skeleton className="h-10 w-full" />
-                ) : (
-                  <a href={content.razorpay_button?.link || '#'} target="_blank" rel="noopener noreferrer" className="w-full">
-                    <Button variant="outline" className="w-full border-primary-teal text-primary-teal hover:bg-primary-teal hover:text-white">
-                      {content.razorpay_button?.text || 'Pay via Razorpay (Simulated)'}
-                    </Button>
-                  </a>
-                )}
-              </div>
-              <div className="p-6 bg-gray-100 rounded-lg shadow-sm flex flex-col items-center">
+              <div className="p-6 bg-gray-100 rounded-lg shadow-sm flex flex-col items-center justify-center">
                 <Wallet size={48} className="text-primary-teal mb-4" />
                 <h4 className="font-semibold text-xl text-gray-800 mb-2">Fundraisers</h4>
                 <p className="text-gray-600 text-sm mb-4">Start or contribute to a fundraiser on our partner platforms.</p>

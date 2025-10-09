@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,7 +15,7 @@ interface NavItem {
 }
 
 export const Header = () => {
-  const { session, user, loading: sessionLoading } = useSession();
+  const { session, user, loading: _sessionLoading } = useSession(); // Renamed to _sessionLoading
   const [navItems, setNavItems] = useState<NavItem[]>([]);
   const [navLoading, setNavLoading] = useState(true);
 
@@ -39,9 +38,7 @@ export const Header = () => {
     fetchNavItems();
   }, []);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
+  // handleLogout was unused in this component, moved to AdminLayout where it's used.
 
   const renderNavLink = (item: NavItem) => {
     if (item.is_external) {

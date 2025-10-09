@@ -15,9 +15,23 @@ import Volunteer from "./pages/Volunteer";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
-import AdminPanel from "./pages/admin/AdminPanel";
+import AdminDashboard from "./pages/admin/AdminDashboard"; // Renamed
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { SessionProvider } from "./contexts/SessionContext";
+import { AdminLayout } from "./components/layout/AdminLayout"; // New import
+
+// Admin Content Pages
+import NavigationMenuPage from "./pages/admin/content/NavigationMenuPage";
+import CausesPage from "./pages/admin/content/CausesPage";
+import HomeContentPage from "./pages/admin/content/HomeContentPage";
+import AboutContentPage from "./pages/admin/content/AboutContentPage";
+import OurWorkContentPage from "./pages/admin/content/OurWorkContentPage";
+import ImpactContentPage from "./pages/admin/content/ImpactContentPage";
+import DonateContentPage from "./pages/admin/content/DonateContentPage";
+import VolunteerContentPage from "./pages/admin/content/VolunteerContentPage";
+import CSRPartnershipContentPage from "./pages/admin/content/CSRPartnershipContentPage";
+import ContactContentPage from "./pages/admin/content/ContactContentPage";
+
 
 const queryClient = new QueryClient();
 
@@ -43,14 +57,28 @@ const App = () => (
             
             {/* Routes without the main layout */}
             <Route path="/login" element={<Login />} />
+            
+            {/* Admin Routes with AdminLayout */}
             <Route 
               path="/admin" 
               element={
                 <ProtectedRoute>
-                  <AdminPanel />
+                  <AdminLayout />
                 </ProtectedRoute>
               } 
-            />
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="navigation-menu" element={<NavigationMenuPage />} />
+              <Route path="causes" element={<CausesPage />} />
+              <Route path="content/home" element={<HomeContentPage />} />
+              <Route path="content/about" element={<AboutContentPage />} />
+              <Route path="content/our-work" element={<OurWorkContentPage />} />
+              <Route path="content/impact" element={<ImpactContentPage />} />
+              <Route path="content/donate" element={<DonateContentPage />} />
+              <Route path="content/volunteer" element={<VolunteerContentPage />} />
+              <Route path="content/csr-partnership" element={<CSRPartnershipContentPage />} />
+              <Route path="content/contact" element={<ContactContentPage />} />
+            </Route>
 
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />

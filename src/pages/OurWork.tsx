@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { SectionTitle } from '@/components/shared/SectionTitle';
 import { CauseCard } from '@/components/shared/CauseCard';
 import { supabase } from '@/integrations/supabase/client';

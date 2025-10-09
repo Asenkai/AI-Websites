@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { SectionTitle } from '@/components/shared/SectionTitle';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { MapPin, Mail, Phone } from 'lucide-react';

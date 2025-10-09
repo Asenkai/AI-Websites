@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MobileNav } from './MobileNav';
 
 interface NavItem {
   id: string;
@@ -15,7 +16,7 @@ interface NavItem {
 }
 
 export const Header = () => {
-  const { session, user, loading: _sessionLoading } = useSession(); // Renamed to _sessionLoading
+  const { session, user, loading: _sessionLoading } = useSession();
   const [navItems, setNavItems] = useState<NavItem[]>([]);
   const [navLoading, setNavLoading] = useState(true);
 
@@ -37,8 +38,6 @@ export const Header = () => {
 
     fetchNavItems();
   }, []);
-
-  // handleLogout was unused in this component, moved to AdminLayout where it's used.
 
   const renderNavLink = (item: NavItem) => {
     if (item.is_external) {
@@ -95,14 +94,13 @@ export const Header = () => {
             </Button>
           </Link>
         </nav>
-        {/* Mobile navigation will be handled by a separate component or a sheet */}
-        <div className="md:hidden">
+        <div className="md:hidden flex items-center gap-2">
           <Link to="/donate">
-            <Button className="bg-cta-green hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+            <Button size="sm" className="bg-cta-green hover:bg-green-700 text-white font-bold py-1 px-3 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
               Donate
             </Button>
           </Link>
-          {/* TODO: Add a mobile menu icon/button here */}
+          <MobileNav />
         </div>
       </div>
     </header>

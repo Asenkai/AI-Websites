@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { HelmetProvider } from 'react-helmet-async'; // New import
+import { HelmetProvider } from 'react-helmet-async';
 import { Layout } from "./components/layout/Layout";
 import Index from "./pages/Index";
 import AboutUs from "./pages/AboutUs";
@@ -22,6 +22,7 @@ import { SessionProvider } from "./contexts/SessionContext";
 import { AdminLayout } from "./components/layout/AdminLayout";
 import { GoogleTagManager } from "./components/integrations/GoogleTagManager";
 import { AnalyticsTracker } from "./components/integrations/AnalyticsTracker";
+import { MetaPixel } from "./components/integrations/MetaPixel";
 
 // Admin Content Pages
 import NavigationMenuPage from "./pages/admin/content/NavigationMenuPage";
@@ -38,6 +39,7 @@ import ContactContentPage from "./pages/admin/content/ContactContentPage";
 // Admin Settings Pages
 import GoogleTagPage from "./pages/admin/settings/GoogleTagPage";
 import RazorpaySettingsPage from "./pages/admin/settings/RazorpaySettingsPage";
+import MetaPixelPage from "./pages/admin/settings/MetaPixelPage";
 
 
 const queryClient = new QueryClient();
@@ -48,6 +50,7 @@ const App = () => (
       <TooltipProvider>
         <HelmetProvider>
           <GoogleTagManager />
+          <MetaPixel />
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -89,6 +92,7 @@ const App = () => (
                 <Route path="content/csr-partnership" element={<CSRPartnershipContentPage />} />
                 <Route path="content/contact" element={<ContactContentPage />} />
                 <Route path="settings/google-tag" element={<GoogleTagPage />} />
+                <Route path="settings/meta-pixel" element={<MetaPixelPage />} />
                 <Route path="settings/razorpay" element={<RazorpaySettingsPage />} />
               </Route>
 

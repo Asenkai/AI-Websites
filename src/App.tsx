@@ -15,10 +15,11 @@ import Volunteer from "./pages/Volunteer";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
-import AdminDashboard from "./pages/admin/AdminDashboard"; // Renamed
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { SessionProvider } from "./contexts/SessionContext";
-import { AdminLayout } from "./components/layout/AdminLayout"; // New import
+import { AdminLayout } from "./components/layout/AdminLayout";
+import { GoogleTagManager } from "./components/integrations/GoogleTagManager"; // Corrected path
 
 // Admin Content Pages
 import NavigationMenuPage from "./pages/admin/content/NavigationMenuPage";
@@ -32,6 +33,9 @@ import VolunteerContentPage from "./pages/admin/content/VolunteerContentPage";
 import CSRPartnershipContentPage from "./pages/admin/content/CSRPartnershipContentPage";
 import ContactContentPage from "./pages/admin/content/ContactContentPage";
 
+// Admin Settings Pages
+import GoogleTagPage from "./pages/admin/settings/GoogleTagPage"; // Corrected path
+
 
 const queryClient = new QueryClient();
 
@@ -39,6 +43,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <SessionProvider>
       <TooltipProvider>
+        <GoogleTagManager />
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -78,6 +83,7 @@ const App = () => (
               <Route path="content/volunteer" element={<VolunteerContentPage />} />
               <Route path="content/csr-partnership" element={<CSRPartnershipContentPage />} />
               <Route path="content/contact" element={<ContactContentPage />} />
+              <Route path="settings/google-tag" element={<GoogleTagPage />} />
             </Route>
 
             {/* Catch-all route */}

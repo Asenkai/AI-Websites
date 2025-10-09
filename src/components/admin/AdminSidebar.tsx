@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Menu, Globe, HandHeart, Home, Info, Briefcase, Gift, Users, Mail, FileText } from 'lucide-react';
+import { LayoutDashboard, Menu, Globe, HandHeart, Home, Info, Briefcase, Gift, Users, Mail, FileText, Settings } from 'lucide-react';
 
 interface AdminSidebarProps {
   className?: string;
@@ -19,6 +19,7 @@ export const AdminSidebar = ({ className }: AdminSidebarProps) => {
     { to: '/admin/content/volunteer', icon: Users, label: 'Volunteer Page Content' },
     { to: '/admin/content/csr-partnership', icon: Briefcase, label: 'CSR Partnership Content' },
     { to: '/admin/content/contact', icon: Mail, label: 'Contact Page Content' },
+    { to: '/admin/settings/google-tag', icon: Settings, label: 'Google Tag' },
   ];
 
   return (
@@ -29,6 +30,7 @@ export const AdminSidebar = ({ className }: AdminSidebarProps) => {
           <NavLink
             key={link.to}
             to={link.to}
+            end={link.to === '/admin'} // Ensure only dashboard is exact match
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",

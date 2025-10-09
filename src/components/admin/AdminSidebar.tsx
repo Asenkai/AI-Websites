@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Menu, Globe, HandHeart, Home, Info, Briefcase, Gift, Users, Mail, FileText, Settings } from 'lucide-react';
+import { LayoutDashboard, Menu, Globe, HandHeart, Home, Info, Briefcase, Gift, Users, Mail, FileText, Settings, CreditCard } from 'lucide-react';
 
 interface AdminSidebarProps {
   className?: string;
@@ -20,6 +20,7 @@ export const AdminSidebar = ({ className }: AdminSidebarProps) => {
     { to: '/admin/content/csr-partnership', icon: Briefcase, label: 'CSR Partnership Content' },
     { to: '/admin/content/contact', icon: Mail, label: 'Contact Page Content' },
     { to: '/admin/settings/google-tag', icon: Settings, label: 'Google Tag' },
+    { to: '/admin/settings/razorpay', icon: CreditCard, label: 'Razorpay Settings' },
   ];
 
   return (

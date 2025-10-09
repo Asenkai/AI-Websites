@@ -37,6 +37,7 @@ import ContactContentPage from "./pages/admin/content/ContactContentPage";
 
 // Admin Settings Pages
 import GoogleTagPage from "./pages/admin/settings/GoogleTagPage";
+import RazorpaySettingsPage from "./pages/admin/settings/RazorpaySettingsPage";
 
 
 const queryClient = new QueryClient();
@@ -88,6 +89,7 @@ const App = () => (
                 <Route path="content/csr-partnership" element={<CSRPartnershipContentPage />} />
                 <Route path="content/contact" element={<ContactContentPage />} />
                 <Route path="settings/google-tag" element={<GoogleTagPage />} />
+                <Route path="settings/razorpay" element={<RazorpaySettingsPage />} />
               </Route>
 
               {/* Catch-all route */}

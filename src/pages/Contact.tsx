@@ -4,6 +4,7 @@ import { ContactForm } from '@/components/forms/ContactForm';
 import { MapPin, Mail, Phone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MetaTags } from '@/components/shared/MetaTags';
 
 interface ContactPageContent {
   hero_title: string;
@@ -48,6 +49,10 @@ const Contact = () => {
 
   return (
     <div className="font-sans">
+      <MetaTags
+        title="Contact Us"
+        description="Get in touch with Aadiv Care Foundation. Find our address, email, and phone number, or use our contact form to send us a message. We'd love to hear from you."
+      />
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-24">
         <div className="container text-center relative z-10">
           {loading ? (

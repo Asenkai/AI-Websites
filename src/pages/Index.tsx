@@ -8,6 +8,7 @@ import { SectionTitle } from '@/components/shared/SectionTitle';
 import { BookOpen, Brain, Droplet, Soup, Home, PawPrint } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MetaTags } from '@/components/shared/MetaTags';
 
 interface HomePageContent {
   hero_title: string;
@@ -66,6 +67,10 @@ const Index = () => {
 
   return (
     <div className="font-sans">
+      <MetaTags
+        title="Aadiv Care Foundation | Healing, Hope & Dignity"
+        description="Aadiv Care Foundation is a non-profit organization dedicated to providing education, healthcare, and support to underprivileged communities. Join us to make a difference."
+      />
       {/* Hero Banner */}
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-32 overflow-hidden">
         <div className="container text-center relative z-10">

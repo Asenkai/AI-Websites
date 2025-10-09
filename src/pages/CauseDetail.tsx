@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { SectionTitle } from '@/components/shared/SectionTitle';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MetaTags } from '@/components/shared/MetaTags';
 
 // Define a more specific type for a cause to avoid 'any' and potential build errors
 interface CauseData {
@@ -76,6 +77,7 @@ const CauseDetail = () => {
   if (!cause) {
     return (
       <div className="container py-20 text-center">
+        <MetaTags title="Cause Not Found" />
         <h1 className="font-serif text-4xl font-bold text-red-600">Cause Not Found</h1>
         <p className="text-lg text-gray-700 mt-4">The cause you are looking for does not exist.</p>
         <Link to="/our-work">
@@ -89,6 +91,11 @@ const CauseDetail = () => {
 
   return (
     <div className="font-sans">
+      <MetaTags
+        title={cause.title}
+        description={cause.problem_statement.substring(0, 160)} // Use first 160 chars of problem statement
+        imageUrl={cause.hero_image_url}
+      />
       {/* Hero Image & Title */}
       <section className="relative h-64 md:h-96 bg-cover bg-center" style={{ backgroundImage: `url(${cause.hero_image_url || '/placeholder.svg'})` }}>
         <div className="absolute inset-0 bg-black/60 flex items-center justify-center">

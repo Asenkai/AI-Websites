@@ -6,6 +6,7 @@ import { TrustBadges } from '@/components/shared/TrustBadges';
 import { CSRProjectTable } from '@/components/shared/CSRProjectTable';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MetaTags } from '@/components/shared/MetaTags';
 
 interface CSRPartnershipPageContent {
   hero_title: string;
@@ -63,6 +64,10 @@ const CSRPartnership = () => {
 
   return (
     <div className="font-sans">
+      <MetaTags
+        title="CSR Partnership"
+        description="Partner with Aadiv Care Foundation for your CSR initiatives. We offer impactful, compliant, and transparent programs to help you drive social change."
+      />
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-24">
         <div className="container text-center relative z-10">
           {loading ? (

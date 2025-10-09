@@ -5,6 +5,7 @@ import { VolunteerForm } from '@/components/forms/VolunteerForm';
 import { MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MetaTags } from '@/components/shared/MetaTags';
 
 interface VolunteerPageContent {
   hero_title: string;
@@ -51,6 +52,10 @@ const Volunteer = () => {
 
   return (
     <div className="font-sans">
+      <MetaTags
+        title="Volunteer With Us"
+        description="Join our team of passionate volunteers and contribute your time and skills to create a positive impact. Find volunteer opportunities at Aadiv Care Foundation."
+      />
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-24">
         <div className="container text-center relative z-10">
           {loading ? (

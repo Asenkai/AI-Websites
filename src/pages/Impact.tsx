@@ -6,6 +6,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MetaTags } from '@/components/shared/MetaTags';
 
 interface ImpactPageContent {
   hero_title: string;
@@ -80,6 +81,10 @@ const Impact = () => {
 
   return (
     <div className="font-sans">
+      <MetaTags
+        title="Our Impact"
+        description="See the tangible impact of your support through success stories, detailed statistics, and our annual reports. Witness the change we create together."
+      />
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-24">
         <div className="container text-center relative z-10">
           {loading ? (

@@ -3,6 +3,7 @@ import { SectionTitle } from '@/components/shared/SectionTitle';
 import { CauseCard } from '@/components/shared/CauseCard';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MetaTags } from '@/components/shared/MetaTags';
 
 interface Cause {
   id: string;
@@ -65,6 +66,10 @@ const OurWork = () => {
 
   return (
     <div className="font-sans">
+      <MetaTags
+        title="Our Work"
+        description="Explore the various causes we champion at Aadiv Care Foundation, from education and healthcare to elder care and environmental welfare."
+      />
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-24">
         <div className="container text-center relative z-10">
           {loading ? (

@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from 'react-helmet-async'; // New import
 import { Layout } from "./components/layout/Layout";
 import Index from "./pages/Index";
 import AboutUs from "./pages/AboutUs";
@@ -20,7 +21,7 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { SessionProvider } from "./contexts/SessionContext";
 import { AdminLayout } from "./components/layout/AdminLayout";
 import { GoogleTagManager } from "./components/integrations/GoogleTagManager";
-import { AnalyticsTracker } from "./components/integrations/AnalyticsTracker"; // New import
+import { AnalyticsTracker } from "./components/integrations/AnalyticsTracker";
 
 // Admin Content Pages
 import NavigationMenuPage from "./pages/admin/content/NavigationMenuPage";
@@ -44,54 +45,56 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <SessionProvider>
       <TooltipProvider>
-        <GoogleTagManager />
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AnalyticsTracker />
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Index />} />
-              <Route path="/about" element={<AboutUs />} />
-              <Route path="/our-work" element={<OurWork />} />
-              <Route path="/our-work/:causeId" element={<CauseDetail />} />
-              <Route path="/impact" element={<Impact />} />
-              <Route path="/donate" element={<Donate />} />
-              <Route path="/csr-partnership" element={<CSRPartnership />} />
-              <Route path="/volunteer" element={<Volunteer />} />
-              <Route path="/contact" element={<Contact />} />
-            </Route>
-            
-            {/* Routes without the main layout */}
-            <Route path="/login" element={<Login />} />
-            
-            {/* Admin Routes with AdminLayout */}
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedRoute>
-                  <AdminLayout />
-                </ProtectedRoute>
-              } 
-            >
-              <Route index element={<AdminDashboard />} />
-              <Route path="navigation-menu" element={<NavigationMenuPage />} />
-              <Route path="causes" element={<CausesPage />} />
-              <Route path="content/home" element={<HomeContentPage />} />
-              <Route path="content/about" element={<AboutContentPage />} />
-              <Route path="content/our-work" element={<OurWorkContentPage />} />
-              <Route path="content/impact" element={<ImpactContentPage />} />
-              <Route path="content/donate" element={<DonateContentPage />} />
-              <Route path="content/volunteer" element={<VolunteerContentPage />} />
-              <Route path="content/csr-partnership" element={<CSRPartnershipContentPage />} />
-              <Route path="content/contact" element={<ContactContentPage />} />
-              <Route path="settings/google-tag" element={<GoogleTagPage />} />
-            </Route>
+        <HelmetProvider>
+          <GoogleTagManager />
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AnalyticsTracker />
+            <Routes>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Index />} />
+                <Route path="/about" element={<AboutUs />} />
+                <Route path="/our-work" element={<OurWork />} />
+                <Route path="/our-work/:causeId" element={<CauseDetail />} />
+                <Route path="/impact" element={<Impact />} />
+                <Route path="/donate" element={<Donate />} />
+                <Route path="/csr-partnership" element={<CSRPartnership />} />
+                <Route path="/volunteer" element={<Volunteer />} />
+                <Route path="/contact" element={<Contact />} />
+              </Route>
+              
+              {/* Routes without the main layout */}
+              <Route path="/login" element={<Login />} />
+              
+              {/* Admin Routes with AdminLayout */}
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute>
+                    <AdminLayout />
+                  </ProtectedRoute>
+                } 
+              >
+                <Route index element={<AdminDashboard />} />
+                <Route path="navigation-menu" element={<NavigationMenuPage />} />
+                <Route path="causes" element={<CausesPage />} />
+                <Route path="content/home" element={<HomeContentPage />} />
+                <Route path="content/about" element={<AboutContentPage />} />
+                <Route path="content/our-work" element={<OurWorkContentPage />} />
+                <Route path="content/impact" element={<ImpactContentPage />} />
+                <Route path="content/donate" element={<DonateContentPage />} />
+                <Route path="content/volunteer" element={<VolunteerContentPage />} />
+                <Route path="content/csr-partnership" element={<CSRPartnershipContentPage />} />
+                <Route path="content/contact" element={<ContactContentPage />} />
+                <Route path="settings/google-tag" element={<GoogleTagPage />} />
+              </Route>
 
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </HelmetProvider>
       </TooltipProvider>
     </SessionProvider>
   </QueryClientProvider>

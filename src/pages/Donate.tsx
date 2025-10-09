@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { QrCode, CreditCard, Wallet } from 'lucide-react'; // Removed Banknote
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MetaTags } from '@/components/shared/MetaTags';
 
 interface DonationPreset {
   amount: number;
@@ -98,6 +99,10 @@ const Donate = () => {
 
   return (
     <div className="font-sans">
+      <MetaTags
+        title="Donate Now"
+        description="Your contribution can change lives. Make a secure one-time or monthly donation to support our mission at Aadiv Care Foundation. All donations are 80G tax-exempt."
+      />
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-24">
         <div className="container text-center relative z-10">
           {loading ? (

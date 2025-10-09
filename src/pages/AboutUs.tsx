@@ -4,6 +4,7 @@ import { SectionTitle } from '@/components/shared/SectionTitle';
 import { TrustBadges } from '@/components/shared/TrustBadges';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MetaTags } from '@/components/shared/MetaTags';
 
 interface AboutPageContent {
   hero_title: string;
@@ -49,6 +50,10 @@ const AboutUs = () => {
 
   return (
     <div className="font-sans">
+      <MetaTags
+        title="About Us"
+        description="Learn about the journey, mission, and vision of Aadiv Care Foundation. Discover our commitment to compassion, transparency, and creating lasting impact."
+      />
       <section className="relative bg-gradient-to-r from-primary-teal to-teal-700 text-white py-20 md:py-24">
         <div className="container text-center relative z-10">
           {loading ? (

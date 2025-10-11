@@ -8,44 +8,53 @@ import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const META_PIXEL_KEY = 'meta_pixel_id';
+const META_ACCESS_TOKEN_KEY = 'meta_access_token';
 
 const MetaPixelPage = () => {
   const [pixelId, setPixelId] = useState('');
+  const [accessToken, setAccessToken] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const fetchPixelId = async () => {
+    const fetchSettings = async () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('site_settings')
-        .select('value')
-        .eq('key', META_PIXEL_KEY)
-        .single();
+        .select('key, value')
+        .in('key', [META_PIXEL_KEY, META_ACCESS_TOKEN_KEY]);
 
-      if (error && error.code !== 'PGRST116') { // PGRST116: 'single' row not found
-        console.error('Error fetching Meta Pixel ID:', error);
-        toast.error('Failed to load Meta Pixel ID.');
+      if (error) {
+        console.error('Error fetching Meta settings:', error);
+        toast.error('Failed to load Meta settings.');
       } else if (data) {
-        setPixelId(data.value || '');
+        const settings = data.reduce((acc, { key, value }) => {
+          acc[key] = value;
+          return acc;
+        }, {} as Record<string, string>);
+        setPixelId(settings[META_PIXEL_KEY] || '');
+        setAccessToken(settings[META_ACCESS_TOKEN_KEY] || '');
       }
       setLoading(false);
     };
 
-    fetchPixelId();
+    fetchSettings();
   }, []);
 
   const handleSave = async () => {
     setIsSaving(true);
     const { error } = await supabase
       .from('site_settings')
-      .upsert({ key: META_PIXEL_KEY, value: pixelId });
+      .upsert([
+        { key: META_PIXEL_KEY, value: pixelId },
+        { key: META_ACCESS_TOKEN_KEY, value: accessToken },
+      ], { onConflict: 'key' });
 
     if (error) {
-      toast.error('Failed to save Meta Pixel ID.');
-      console.error('Error saving Meta Pixel ID:', error);
+      toast.error('Failed to save Meta settings.');
+      console.error('Error saving Meta settings:', error);
     } else {
-      toast.success('Meta Pixel ID saved successfully!');
+      toast.success('Meta settings saved successfully!');
     }
     setIsSaving(false);
   };
@@ -53,30 +62,42 @@ const MetaPixelPage = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-primary-teal">Meta (Facebook) Pixel</CardTitle>
+        <CardTitle className="text-primary-teal">Meta (Facebook) Pixel & Conversions API</CardTitle>
         <CardDescription>
-          Enter your Meta Pixel ID here. This will add the Facebook tracking pixel to your site for analytics and ad campaign tracking.
+          Enter your Meta Pixel ID for browser-side tracking and your Conversions API Access Token for server-side event tracking.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         {loading ? (
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-10 w-full" />
-          </div>
+          <>
+            <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+            <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+          </>
         ) : (
-          <div className="space-y-2">
-            <Label htmlFor="meta-pixel-id">Meta Pixel ID</Label>
-            <Input
-              id="meta-pixel-id"
-              placeholder="Enter your Pixel ID"
-              value={pixelId}
-              onChange={(e) => setPixelId(e.target.value)}
-            />
-          </div>
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="meta-pixel-id">Meta Pixel ID</Label>
+              <Input
+                id="meta-pixel-id"
+                placeholder="Enter your Pixel ID"
+                value={pixelId}
+                onChange={(e) => setPixelId(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="meta-access-token">Conversions API Access Token</Label>
+              <Input
+                id="meta-access-token"
+                type="password"
+                placeholder="Enter your Access Token"
+                value={accessToken}
+                onChange={(e) => setAccessToken(e.target.value)}
+              />
+            </div>
+          </>
         )}
         <Button onClick={handleSave} disabled={loading || isSaving}>
-          {isSaving ? 'Saving...' : 'Save ID'}
+          {isSaving ? 'Saving...' : 'Save Settings'}
         </Button>
       </CardContent>
     </Card>

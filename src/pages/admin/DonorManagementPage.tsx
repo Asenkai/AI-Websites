@@ -36,6 +36,31 @@ const DonorManagementPage = () => {
     fetchDonors();
   }, []);
 
+  const trackEvent = async (eventName: string, values: DonorFormValues) => {
+    try {
+      const nameParts = values.name.split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ');
+
+      await supabase.functions.invoke('track-event', {
+        body: {
+          eventName,
+          userData: {
+            email: values.email,
+            phone: values.phone,
+            firstName: firstName,
+            lastName: lastName,
+            value: values.amount_donated,
+            currency: 'INR',
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Failed to track event:', error);
+      // Don't show a toast for this, as it's a background task
+    }
+  };
+
   const handleAddNew = () => {
     setSelectedDonor(null);
     setIsDialogOpen(true);
@@ -87,6 +112,14 @@ const DonorManagementPage = () => {
       toast.error(`Failed to save donor: ${error.message}`);
     } else {
       toast.success(`Donor ${selectedDonor ? 'updated' : 'added'} successfully!`);
+      
+      // Event Tracking Logic
+      if (!selectedDonor) { // New Donor
+        trackEvent(values.status === 'Donated' ? 'Purchase' : 'Lead', values);
+      } else if (selectedDonor.status !== 'Donated' && values.status === 'Donated') { // Status changed to Donated
+        trackEvent('Purchase', values);
+      }
+
       setIsDialogOpen(false);
       fetchDonors();
     }

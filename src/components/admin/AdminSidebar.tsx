@@ -11,7 +11,6 @@ export const AdminSidebar = ({ className }: AdminSidebarProps) => {
     { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/admin/navigation-menu', icon: Menu, label: 'Navigation Menu' },
     { to: '/admin/causes', icon: HandHeart, label: 'Causes' },
-    { to: '/admin/donors', icon: Users, label: 'Donor Management' },
     { to: '/admin/content/home', icon: Home, label: 'Home Page Content' },
     { to: '/admin/content/about', icon: Info, label: 'About Us Page Content' },
     { to: '/admin/content/our-work', icon: Globe, label: 'Our Work Page Content' },

@@ -35,7 +35,6 @@ import DonateContentPage from "./pages/admin/content/DonateContentPage";
 import VolunteerContentPage from "./pages/admin/content/VolunteerContentPage";
 import CSRPartnershipContentPage from "./pages/admin/content/CSRPartnershipContentPage";
 import ContactContentPage from "./pages/admin/content/ContactContentPage";
-import DonorManagementPage from "./pages/admin/DonorManagementPage";
 
 // Admin Settings Pages
 import GoogleTagPage from "./pages/admin/settings/GoogleTagPage";
@@ -84,7 +83,6 @@ const App = () => (
                 <Route index element={<AdminDashboard />} />
                 <Route path="navigation-menu" element={<NavigationMenuPage />} />
                 <Route path="causes" element={<CausesPage />} />
-                <Route path="donors" element={<DonorManagementPage />} />
                 <Route path="content/home" element={<HomeContentPage />} />
                 <Route path="content/about" element={<AboutContentPage />} />
                 <Route path="content/our-work" element={<OurWorkContentPage />} />

@@ -36,12 +36,14 @@ import VolunteerContentPage from "./pages/admin/content/VolunteerContentPage";
 import CSRPartnershipContentPage from "./pages/admin/content/CSRPartnershipContentPage";
 import ContactContentPage from "./pages/admin/content/ContactContentPage";
 import DonorManagementPage from "./pages/admin/donors/DonorManagementPage";
-import MISDashboard from "./pages/admin/MISDashboard"; // Import the new MIS Dashboard
+import MISDashboard from "./pages/admin/MISDashboard";
 
 // Admin Settings Pages
 import GoogleTagPage from "./pages/admin/settings/GoogleTagPage";
 import RazorpaySettingsPage from "./pages/admin/settings/RazorpaySettingsPage";
 import MetaPixelPage from "./pages/admin/settings/MetaPixelPage";
+import WhatsAppSettingsPage from "./pages/admin/settings/WhatsAppSettingsPage"; // New import
+import EmailSettingsPage from "./pages/admin/settings/EmailSettingsPage"; // New import
 
 
 const queryClient = new QueryClient();
@@ -83,7 +85,7 @@ const App = () => (
                 } 
               >
                 <Route index element={<AdminDashboard />} />
-                <Route path="mis-dashboard" element={<MISDashboard />} /> {/* New MIS Dashboard Route */}
+                <Route path="mis-dashboard" element={<MISDashboard />} />
                 <Route path="navigation-menu" element={<NavigationMenuPage />} />
                 <Route path="causes" element={<CausesPage />} />
                 <Route path="donors" element={<DonorManagementPage />} />
@@ -98,6 +100,8 @@ const App = () => (
                 <Route path="settings/google-tag" element={<GoogleTagPage />} />
                 <Route path="settings/meta-pixel" element={<MetaPixelPage />} />
                 <Route path="settings/razorpay" element={<RazorpaySettingsPage />} />
+                <Route path="settings/whatsapp" element={<WhatsAppSettingsPage />} /> {/* New route */}
+                <Route path="settings/email" element={<EmailSettingsPage />} /> {/* New route */}
               </Route>
 
               {/* Catch-all route */}

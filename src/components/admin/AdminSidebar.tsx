@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Menu, Globe, HandHeart, Home, Info, Briefcase, Gift, Users, Mail, FileText, Settings, CreditCard, BarChart3, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Menu, Globe, HandHeart, Home, Info, Briefcase, Gift, Users, Mail, FileText, Settings, CreditCard, BarChart3, TrendingUp, MessageCircle, AtSign } from 'lucide-react';
 
 interface AdminSidebarProps {
   className?: string;
@@ -9,7 +9,7 @@ interface AdminSidebarProps {
 export const AdminSidebar = ({ className }: AdminSidebarProps) => {
   const navLinks = [
     { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/admin/mis-dashboard', icon: TrendingUp, label: 'MIS Dashboard' }, // New MIS Dashboard link
+    { to: '/admin/mis-dashboard', icon: TrendingUp, label: 'MIS Dashboard' },
     { to: '/admin/navigation-menu', icon: Menu, label: 'Navigation Menu' },
     { to: '/admin/causes', icon: HandHeart, label: 'Causes' },
     { to: '/admin/donors', icon: Users, label: 'Donor Management' },
@@ -24,6 +24,8 @@ export const AdminSidebar = ({ className }: AdminSidebarProps) => {
     { to: '/admin/settings/google-tag', icon: Settings, label: 'Google Tag' },
     { to: '/admin/settings/meta-pixel', icon: BarChart3, label: 'Meta Pixel' },
     { to: '/admin/settings/razorpay', icon: CreditCard, label: 'Razorpay Settings' },
+    { to: '/admin/settings/whatsapp', icon: MessageCircle, label: 'WhatsApp Settings' }, // New link
+    { to: '/admin/settings/email', icon: AtSign, label: 'Email Settings' }, // New link
   ];
 
   return (

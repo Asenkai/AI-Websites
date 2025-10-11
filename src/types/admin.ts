@@ -30,3 +30,15 @@ export interface CauseData {
   volunteer_button: { text: string; link: string };
   order: number;
 }
+
+export interface Donor {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  status: 'Potential' | 'Contacted' | 'In Process' | 'Donated' | 'Not Interested';
+  amount_donated: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}

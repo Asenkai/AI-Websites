@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, Upload, Download } from 'lucide-react';
 import { Donor } from '@/types/admin';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DonorDialog, DonorFormValues } from '@/components/admin/DonorDialog';
+import Papa from 'papaparse';
 
 const DonorManagementPage = () => {
   const [donors, setDonors] = useState<Donor[]>([]);
@@ -15,6 +16,8 @@ const DonorManagementPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchDonors = async () => {
     setLoading(true);
@@ -113,10 +116,9 @@ const DonorManagementPage = () => {
     } else {
       toast.success(`Donor ${selectedDonor ? 'updated' : 'added'} successfully!`);
       
-      // Event Tracking Logic
-      if (!selectedDonor) { // New Donor
+      if (!selectedDonor) {
         trackEvent(values.status === 'Donated' ? 'Purchase' : 'Lead', values);
-      } else if (selectedDonor.status !== 'Donated' && values.status === 'Donated') { // Status changed to Donated
+      } else if (selectedDonor.status !== 'Donated' && values.status === 'Donated') {
         trackEvent('Purchase', values);
       }
 
@@ -125,14 +127,112 @@ const DonorManagementPage = () => {
     }
   };
 
+  const handleTemplateDownload = () => {
+    const csvTemplate = [
+      ['name', 'email', 'phone', 'status', 'amount_donated', 'notes'],
+      ['Jane Smith', 'jane.smith@example.com', '9876543210', 'Potential', '5000', 'Met at fundraising event.'],
+    ];
+    const csvContent = csvTemplate.map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'donors_template.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const uploadToast = toast.loading('Parsing CSV file...');
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        toast.dismiss(uploadToast);
+        const parsedData = results.data as any[];
+        
+        if (results.errors.length > 0) {
+          toast.error(`Error parsing CSV: ${results.errors[0].message}`);
+          setIsUploading(false);
+          return;
+        }
+
+        const requiredFields = ['name', 'status'];
+        const isValid = parsedData.every(row => requiredFields.every(field => row[field]));
+
+        if (!isValid) {
+          toast.error('CSV is missing required fields. Please ensure "name" and "status" columns are present for all rows.');
+          setIsUploading(false);
+          return;
+        }
+
+        const donorsToInsert = parsedData.map(row => ({
+          name: row.name,
+          email: row.email || null,
+          phone: row.phone || null,
+          status: row.status || 'Potential',
+          amount_donated: row.amount_donated ? Number(row.amount_donated) : 0,
+          notes: row.notes || null,
+        }));
+
+        const insertToast = toast.loading(`Inserting ${donorsToInsert.length} donors...`);
+        const { error } = await supabase.from('donors').insert(donorsToInsert);
+        toast.dismiss(insertToast);
+
+        if (error) {
+          toast.error(`Failed to import donors: ${error.message}`);
+        } else {
+          toast.success(`${donorsToInsert.length} donors imported successfully!`);
+          fetchDonors();
+        }
+        setIsUploading(false);
+      },
+      error: (error) => {
+        toast.dismiss(uploadToast);
+        toast.error(`Failed to parse CSV: ${error.message}`);
+        setIsUploading(false);
+      }
+    });
+
+    if (event.target) {
+      event.target.value = '';
+    }
+  };
+
   return (
     <>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
           <CardTitle className="capitalize text-primary-teal">Donor & Lead Management</CardTitle>
-          <Button onClick={handleAddNew} size="sm">
-            <PlusCircle size={16} className="mr-2" /> Add New Donor
-          </Button>
+          <div className="flex gap-2 flex-wrap">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept=".csv"
+              className="hidden"
+            />
+            <Button onClick={handleTemplateDownload} size="sm" variant="outline">
+              <Download size={16} className="mr-2" /> Download Template
+            </Button>
+            <Button onClick={handleImportClick} size="sm" variant="outline" disabled={isUploading}>
+              {isUploading ? 'Uploading...' : <><Upload size={16} className="mr-2" /> Import from CSV</>}
+            </Button>
+            <Button onClick={handleAddNew} size="sm">
+              <PlusCircle size={16} className="mr-2" /> Add New Donor
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto rounded-lg border">

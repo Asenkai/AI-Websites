@@ -28,6 +28,11 @@ interface Donor {
   status: 'Potential' | 'Contacted' | 'Engaged' | 'Donated' | 'Inactive';
   amount_donated: number | null;
   notes: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_term: string | null;
+  utm_content: string | null;
   created_at: string;
 }
 
@@ -43,6 +48,11 @@ const donorFormSchema = z.object({
     z.number().min(0).nullable()
   ),
   notes: z.string().optional(),
+  utm_source: z.string().optional().or(z.literal('')),
+  utm_medium: z.string().optional().or(z.literal('')),
+  utm_campaign: z.string().optional().or(z.literal('')),
+  utm_term: z.string().optional().or(z.literal('')),
+  utm_content: z.string().optional().or(z.literal('')),
 });
 
 type DonorFormValues = z.infer<typeof donorFormSchema>;
@@ -64,6 +74,11 @@ const DonorManagementPage = () => {
       status: 'Potential',
       amount_donated: 0,
       notes: '',
+      utm_source: '',
+      utm_medium: '',
+      utm_campaign: '',
+      utm_term: '',
+      utm_content: '',
     },
   });
 
@@ -97,6 +112,11 @@ const DonorManagementPage = () => {
       status: donor.status,
       amount_donated: donor.amount_donated || 0,
       notes: donor.notes || '',
+      utm_source: donor.utm_source || '',
+      utm_medium: donor.utm_medium || '',
+      utm_campaign: donor.utm_campaign || '',
+      utm_term: donor.utm_term || '',
+      utm_content: donor.utm_content || '',
     });
     setDialogOpen(true);
   };
@@ -110,6 +130,11 @@ const DonorManagementPage = () => {
       status: 'Potential',
       amount_donated: 0,
       notes: '',
+      utm_source: '',
+      utm_medium: '',
+      utm_campaign: '',
+      utm_term: '',
+      utm_content: '',
     });
     setDialogOpen(true);
   };
@@ -125,6 +150,11 @@ const DonorManagementPage = () => {
       status: values.status,
       amount_donated: values.amount_donated,
       notes: values.notes || null,
+      utm_source: values.utm_source || null,
+      utm_medium: values.utm_medium || null,
+      utm_campaign: values.utm_campaign || null,
+      utm_term: values.utm_term || null,
+      utm_content: values.utm_content || null,
     };
 
     let error;
@@ -192,6 +222,11 @@ const DonorManagementPage = () => {
             status: row.status || 'Potential',
             amount_donated: row.amount_donated ? Number(row.amount_donated) : 0,
             notes: row.notes || null,
+            utm_source: row.utm_source || null,
+            utm_medium: row.utm_medium || null,
+            utm_campaign: row.utm_campaign || null,
+            utm_term: row.utm_term || null,
+            utm_content: row.utm_content || null,
           }))
           .filter(donor => donor.name); // Ensure name is present
 
@@ -227,6 +262,7 @@ const DonorManagementPage = () => {
           <CardDescription>
             Upload a CSV file to add multiple donors at once. The CSV must contain 'name' and 'status' columns.
             Allowed statuses are: Potential, Contacted, Engaged, Donated, Inactive.
+            Optional columns: email, phone, amount_donated, notes, utm_source, utm_medium, utm_campaign, utm_term, utm_content.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col sm:flex-row items-center gap-4">
@@ -263,22 +299,25 @@ const DonorManagementPage = () => {
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
+          <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Amount Donated</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="min-w-[150px]">Name</TableHead>
+                  <TableHead className="min-w-[150px]">Email</TableHead>
+                  <TableHead className="min-w-[100px]">Status</TableHead>
+                  <TableHead className="text-right min-w-[120px]">Amount Donated</TableHead>
+                  <TableHead className="min-w-[100px]">UTM Source</TableHead>
+                  <TableHead className="min-w-[100px]">UTM Medium</TableHead>
+                  <TableHead className="min-w-[100px]">UTM Campaign</TableHead>
+                  <TableHead className="text-right min-w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell colSpan={5}><Skeleton className="h-8 w-full" /></TableCell>
+                      <TableCell colSpan={8}><Skeleton className="h-8 w-full" /></TableCell>
                     </TableRow>
                   ))
                 ) : donors.length > 0 ? (
@@ -290,6 +329,9 @@ const DonorManagementPage = () => {
                       <TableCell className="text-right">
                         {donor.amount_donated?.toLocaleString('en-IN', { style: 'currency', currency: 'INR' }) || '₹0.00'}
                       </TableCell>
+                      <TableCell>{donor.utm_source || '-'}</TableCell>
+                      <TableCell>{donor.utm_medium || '-'}</TableCell>
+                      <TableCell>{donor.utm_campaign || '-'}</TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="icon" onClick={() => openEditDialog(donor)}>
                           <Edit className="h-4 w-4" />
@@ -302,7 +344,7 @@ const DonorManagementPage = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">No donors found.</TableCell>
+                    <TableCell colSpan={8} className="text-center">No donors found.</TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -312,14 +354,14 @@ const DonorManagementPage = () => {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>{editingDonor ? 'Edit Donor' : 'Add New Donor'}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
               <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem>
+                <FormItem className="md:col-span-2">
                   <FormLabel>Name</FormLabel>
                   <FormControl><Input {...field} /></FormControl>
                   <FormMessage />
@@ -362,14 +404,49 @@ const DonorManagementPage = () => {
                   <FormMessage />
                 </FormItem>
               )} />
-              <FormField control={form.control} name="notes" render={({ field }) => (
+              <FormField control={form.control} name="utm_source" render={({ field }) => (
                 <FormItem>
+                  <FormLabel>UTM Source</FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="utm_medium" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>UTM Medium</FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="utm_campaign" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>UTM Campaign</FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="utm_term" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>UTM Term</FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="utm_content" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>UTM Content</FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="notes" render={({ field }) => (
+                <FormItem className="md:col-span-2">
                   <FormLabel>Notes</FormLabel>
                   <FormControl><Textarea {...field} value={field.value ?? ''} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
-              <DialogFooter>
+              <DialogFooter className="md:col-span-2 pt-4">
                 <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
                 <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Saving...' : 'Save'}</Button>
               </DialogFooter>

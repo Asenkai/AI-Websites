@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Menu, Globe, HandHeart, Home, Info, Briefcase, Gift, Users, Mail, FileText, Settings, CreditCard, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Menu, Globe, HandHeart, Home, Info, Briefcase, Gift, Users, Mail, FileText, Settings, CreditCard, BarChart3, TrendingUp } from 'lucide-react';
 
 interface AdminSidebarProps {
   className?: string;
@@ -9,6 +9,7 @@ interface AdminSidebarProps {
 export const AdminSidebar = ({ className }: AdminSidebarProps) => {
   const navLinks = [
     { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/admin/mis-dashboard', icon: TrendingUp, label: 'MIS Dashboard' }, // New MIS Dashboard link
     { to: '/admin/navigation-menu', icon: Menu, label: 'Navigation Menu' },
     { to: '/admin/causes', icon: HandHeart, label: 'Causes' },
     { to: '/admin/donors', icon: Users, label: 'Donor Management' },

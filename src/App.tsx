@@ -36,6 +36,7 @@ import VolunteerContentPage from "./pages/admin/content/VolunteerContentPage";
 import CSRPartnershipContentPage from "./pages/admin/content/CSRPartnershipContentPage";
 import ContactContentPage from "./pages/admin/content/ContactContentPage";
 import DonorManagementPage from "./pages/admin/donors/DonorManagementPage";
+import MISDashboard from "./pages/admin/MISDashboard"; // Import the new MIS Dashboard
 
 // Admin Settings Pages
 import GoogleTagPage from "./pages/admin/settings/GoogleTagPage";
@@ -82,6 +83,7 @@ const App = () => (
                 } 
               >
                 <Route index element={<AdminDashboard />} />
+                <Route path="mis-dashboard" element={<MISDashboard />} /> {/* New MIS Dashboard Route */}
                 <Route path="navigation-menu" element={<NavigationMenuPage />} />
                 <Route path="causes" element={<CausesPage />} />
                 <Route path="donors" element={<DonorManagementPage />} />

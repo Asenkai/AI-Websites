@@ -10,6 +10,7 @@ import { QrCode, Wallet } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MetaTags } from '@/components/shared/MetaTags';
+import { useLocation } from 'react-router-dom'; // Import useLocation to get URL parameters
 
 interface DonationPreset {
   amount: number;
@@ -36,6 +37,8 @@ const Donate = () => {
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [razorpayKeyId, setRazorpayKeyId] = useState<string | null>(null);
+
+  const location = useLocation(); // Get location object for URL parameters
 
   useEffect(() => {
     const fetchContentAndKey = async () => {
@@ -111,8 +114,26 @@ const Donate = () => {
     const loadingToast = toast.loading('Initializing payment...');
 
     try {
+      // Extract UTM parameters from URL
+      const searchParams = new URLSearchParams(location.search);
+      const utm_source = searchParams.get('utm_source');
+      const utm_medium = searchParams.get('utm_medium');
+      const utm_campaign = searchParams.get('utm_campaign');
+      const utm_term = searchParams.get('utm_term');
+      const utm_content = searchParams.get('utm_content');
+      const causeId = searchParams.get('cause_id'); // Assuming cause_id can be passed in URL
+
       const { data: order, error } = await supabase.functions.invoke('create-razorpay-order', {
-        body: { amount: finalAmount },
+        body: {
+          amount: finalAmount,
+          platform: 'Razorpay',
+          cause_id: causeId,
+          utm_source,
+          utm_medium,
+          utm_campaign,
+          utm_term,
+          utm_content,
+        },
       });
 
       if (error) throw new Error(error.message);
@@ -127,10 +148,24 @@ const Donate = () => {
         name: 'Aadiv Care Foundation',
         description: `Donation for ${isMonthly ? 'Monthly Support' : 'a Cause'}`,
         order_id: order.id,
-        handler: function (response: any) {
-          toast.success('Thank you! Your donation was successful.');
-          console.log('Payment successful:', response);
-          // Here you would typically save the payment details to your database
+        handler: async function (response: any) {
+          // Payment successful, update the donation record in Supabase
+          const { error: updateError } = await supabase
+            .from('donations')
+            .update({
+              payment_status: 'successful',
+              transaction_id: response.razorpay_payment_id, // Store payment ID
+              updated_at: new Date().toISOString(),
+            })
+            .eq('transaction_id', order.id); // Match by order_id initially stored
+
+          if (updateError) {
+            console.error('Error updating donation status:', updateError);
+            toast.error('Donation successful, but failed to record status. Please contact support.');
+          } else {
+            toast.success('Thank you! Your donation was successful.');
+            console.log('Payment successful:', response);
+          }
         },
         prefill: {
           name: '', // You can prefill user details if they are logged in
@@ -139,6 +174,7 @@ const Donate = () => {
         },
         notes: {
           type: isMonthly ? 'monthly_donation' : 'one_time_donation',
+          order_id: order.id, // Pass the order ID to notes for easier lookup
         },
         theme: {
           color: '#0F766E', // primary-teal color
@@ -146,7 +182,19 @@ const Donate = () => {
       };
 
       const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', function (response: any) {
+      rzp.on('payment.failed', async function (response: any) {
+        // Payment failed, update the donation record in Supabase
+        const { error: updateError } = await supabase
+          .from('donations')
+          .update({
+            payment_status: 'failed',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('transaction_id', order.id); // Match by order_id initially stored
+
+        if (updateError) {
+          console.error('Error updating donation status after failure:', updateError);
+        }
         toast.error('Payment failed. Please try again.');
         console.error('Payment failed:', response.error);
       });

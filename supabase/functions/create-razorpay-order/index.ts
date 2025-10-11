@@ -18,7 +18,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { amount } = await req.json();
+    const { amount, platform, cause_id, utm_source, utm_medium, utm_campaign, utm_term, utm_content } = await req.json();
 
     if (!amount || typeof amount !== 'number' || amount <= 0) {
       return new Response(JSON.stringify({ error: 'A valid amount is required.' }), {
@@ -83,6 +83,32 @@ serve(async (req: Request) => {
     }
 
     const orderData = await razorpayResponse.json();
+
+    // Insert a pending donation record into the 'donations' table
+    const { data: _donationRecord, error: insertError } = await supabaseAdmin // Fixed: Renamed to _donationRecord
+      .from('donations')
+      .insert({
+        amount: amount,
+        currency: 'INR',
+        platform: platform || 'Razorpay', // Default to Razorpay if not provided
+        cause_id: cause_id || null,
+        transaction_id: orderData.id, // Use Razorpay order ID as transaction_id
+        payment_status: 'pending',
+        utm_source: utm_source || null,
+        utm_medium: utm_medium || null,
+        utm_campaign: utm_campaign || null,
+        utm_term: utm_term || null,
+        utm_content: utm_content || null,
+        // donor_id and state can be added here if collected from frontend
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Error inserting pending donation record:', insertError);
+      // Even if insertion fails, we still return the order data to allow payment to proceed
+      // The frontend will handle updating the status after payment.
+    }
 
     return new Response(JSON.stringify(orderData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

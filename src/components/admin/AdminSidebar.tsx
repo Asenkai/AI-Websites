@@ -1,13 +1,20 @@
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Menu, Globe, HandHeart, Home, Info, Briefcase, Gift, Users, Mail, FileText, Settings, CreditCard, BarChart3, TrendingUp, MessageCircle, AtSign } from 'lucide-react';
+import { LayoutDashboard, Menu, Globe, HandHeart, Home, Info, Briefcase, Gift, Users, Mail, FileText, Settings, CreditCard, BarChart3, TrendingUp, MessageCircle, AtSign, LayoutTemplate, AlignLeft, LucideIcon } from 'lucide-react';
 
 interface AdminSidebarProps {
   className?: string;
 }
 
+// Define an interface for navigation link items
+interface NavLinkItem {
+  to: string;
+  icon: LucideIcon;
+  label: string;
+}
+
 export const AdminSidebar = ({ className }: AdminSidebarProps) => {
-  const navLinks = [
+  const navLinks: NavLinkItem[] = [
     { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/admin/mis-dashboard', icon: TrendingUp, label: 'MIS Dashboard' },
     { to: '/admin/navigation-menu', icon: Menu, label: 'Navigation Menu' },
@@ -21,11 +28,13 @@ export const AdminSidebar = ({ className }: AdminSidebarProps) => {
     { to: '/admin/content/volunteer', icon: Users, label: 'Volunteer Page Content' },
     { to: '/admin/content/csr-partnership', icon: Briefcase, label: 'CSR Partnership Content' },
     { to: '/admin/content/contact', icon: Mail, label: 'Contact Page Content' },
+    { to: '/admin/content/header', icon: LayoutTemplate, label: 'Header Content' },
+    { to: '/admin/content/footer', icon: AlignLeft, label: 'Footer Content' },
     { to: '/admin/settings/google-tag', icon: Settings, label: 'Google Tag' },
     { to: '/admin/settings/meta-pixel', icon: BarChart3, label: 'Meta Pixel' },
     { to: '/admin/settings/razorpay', icon: CreditCard, label: 'Razorpay Settings' },
-    { to: '/admin/settings/whatsapp', icon: MessageCircle, label: 'WhatsApp Settings' }, // New link
-    { to: '/admin/settings/email', icon: AtSign, label: 'Email Settings' }, // New link
+    { to: '/admin/settings/whatsapp', icon: MessageCircle, label: 'WhatsApp Settings' },
+    { to: '/admin/settings/email', icon: AtSign, label: 'Email Settings' },
   ];
 
   return (

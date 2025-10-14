@@ -15,28 +15,55 @@ interface NavItem {
   parent_id: string | null;
 }
 
+interface HeaderContent {
+  header_logo_image: { url: string; alt: string };
+  header_site_title: string;
+}
+
 export const Header = () => {
   const { session, user, loading: _sessionLoading } = useSession();
   const [navItems, setNavItems] = useState<NavItem[]>([]);
-  const [navLoading, setNavLoading] = useState(true);
+  const [headerContent, setHeaderContent] = useState<Partial<HeaderContent>>({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchNavItems = async () => {
-      setNavLoading(true);
-      const { data, error } = await supabase
+    const fetchHeaderData = async () => {
+      setLoading(true);
+      // Fetch navigation items
+      const { data: navData, error: navError } = await supabase
         .from('navigation_items')
         .select('*')
         .order('order', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching navigation items:', error);
+      if (navError) {
+        console.error('Error fetching navigation items:', navError);
       } else {
-        setNavItems(data || []);
+        setNavItems(navData || []);
       }
-      setNavLoading(false);
+
+      // Fetch header content
+      const { data: contentData, error: contentError } = await supabase
+        .from('page_content')
+        .select('element_id, content_data')
+        .eq('page_slug', 'header');
+
+      if (contentError) {
+        console.error('Error fetching header content:', contentError);
+      } else {
+        const formattedContent = contentData.reduce((acc, item) => {
+          if (item.element_id.includes('_image')) {
+            acc[item.element_id] = item.content_data;
+          } else {
+            acc[item.element_id] = item.content_data.text;
+          }
+          return acc;
+        }, {} as any);
+        setHeaderContent(formattedContent);
+      }
+      setLoading(false);
     };
 
-    fetchNavItems();
+    fetchHeaderData();
   }, []);
 
   const renderNavLink = (item: NavItem) => {
@@ -69,11 +96,19 @@ export const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-white/90 backdrop-blur-sm shadow-sm">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
-          <img src="/placeholder.svg" alt="Aadiv Care Foundation Logo" className="h-8 w-8" />
-          <span className="font-serif text-xl font-bold text-primary-teal">Aadiv Care Foundation</span>
+          {loading ? (
+            <Skeleton className="h-8 w-8 rounded-full" />
+          ) : (
+            <img src={headerContent.header_logo_image?.url || '/placeholder.svg'} alt={headerContent.header_logo_image?.alt || 'Aadiv Care Foundation Logo'} className="h-8 w-8" />
+          )}
+          {loading ? (
+            <Skeleton className="h-6 w-48" />
+          ) : (
+            <span className="font-serif text-xl font-bold text-primary-teal">{headerContent.header_site_title || 'Aadiv Care Foundation'}</span>
+          )}
         </Link>
         <nav className="hidden md:flex items-center space-x-6">
-          {navLoading ? (
+          {loading ? (
             <>
               <Skeleton className="h-5 w-20" />
               <Skeleton className="h-5 w-24" />

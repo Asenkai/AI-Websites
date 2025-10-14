@@ -35,6 +35,8 @@ import DonateContentPage from "./pages/admin/content/DonateContentPage";
 import VolunteerContentPage from "./pages/admin/content/VolunteerContentPage";
 import CSRPartnershipContentPage from "./pages/admin/content/CSRPartnershipContentPage";
 import ContactContentPage from "./pages/admin/content/ContactContentPage";
+import HeaderContentPage from "./pages/admin/content/HeaderContentPage"; // New import
+import FooterContentPage from "./pages/admin/content/FooterContentPage"; // New import
 import DonorManagementPage from "./pages/admin/donors/DonorManagementPage";
 import MISDashboard from "./pages/admin/MISDashboard";
 
@@ -42,8 +44,8 @@ import MISDashboard from "./pages/admin/MISDashboard";
 import GoogleTagPage from "./pages/admin/settings/GoogleTagPage";
 import RazorpaySettingsPage from "./pages/admin/settings/RazorpaySettingsPage";
 import MetaPixelPage from "./pages/admin/settings/MetaPixelPage";
-import WhatsAppSettingsPage from "./pages/admin/settings/WhatsAppSettingsPage"; // New import
-import EmailSettingsPage from "./pages/admin/settings/EmailSettingsPage"; // New import
+import WhatsAppSettingsPage from "./pages/admin/settings/WhatsAppSettingsPage";
+import EmailSettingsPage from "./pages/admin/settings/EmailSettingsPage";
 
 
 const queryClient = new QueryClient();
@@ -97,11 +99,13 @@ const App = () => (
                 <Route path="content/volunteer" element={<VolunteerContentPage />} />
                 <Route path="content/csr-partnership" element={<CSRPartnershipContentPage />} />
                 <Route path="content/contact" element={<ContactContentPage />} />
+                <Route path="content/header" element={<HeaderContentPage />} /> {/* New route */}
+                <Route path="content/footer" element={<FooterContentPage />} /> {/* New route */}
                 <Route path="settings/google-tag" element={<GoogleTagPage />} />
                 <Route path="settings/meta-pixel" element={<MetaPixelPage />} />
                 <Route path="settings/razorpay" element={<RazorpaySettingsPage />} />
-                <Route path="settings/whatsapp" element={<WhatsAppSettingsPage />} /> {/* New route */}
-                <Route path="settings/email" element={<EmailSettingsPage />} /> {/* New route */}
+                <Route path="settings/whatsapp" element={<WhatsAppSettingsPage />} />
+                <Route path="settings/email" element={<EmailSettingsPage />} />
               </Route>
 
               {/* Catch-all route */}

@@ -13,9 +13,15 @@ interface NavItem {
   is_external: boolean;
 }
 
+interface HeaderContent {
+  header_logo_image: { url: string; alt: string };
+  header_site_title: string;
+}
+
 export const MobileNav = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [navItems, setNavItems] = useState<NavItem[]>([]);
+  const [headerContent, setHeaderContent] = useState<Partial<HeaderContent>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,6 +36,26 @@ export const MobileNav = () => {
         console.error('Error fetching navigation items for mobile:', error);
       } else {
         setNavItems(data || []);
+      }
+
+      // Fetch header content for logo and title
+      const { data: contentData, error: contentError } = await supabase
+        .from('page_content')
+        .select('element_id, content_data')
+        .eq('page_slug', 'header');
+
+      if (contentError) {
+        console.error('Error fetching header content for mobile nav:', contentError);
+      } else {
+        const formattedContent = contentData.reduce((acc, item) => {
+          if (item.element_id.includes('_image')) {
+            acc[item.element_id] = item.content_data;
+          } else {
+            acc[item.element_id] = item.content_data.text;
+          }
+          return acc;
+        }, {} as any);
+        setHeaderContent(formattedContent);
       }
       setLoading(false);
     };
@@ -70,8 +96,16 @@ export const MobileNav = () => {
       <SheetContent side="left" className="w-full sm:w-3/4">
         <div className="p-4">
           <Link to="/" onClick={() => setIsOpen(false)} className="flex items-center space-x-2 mb-8">
-            <img src="/placeholder.svg" alt="Aadiv Care Foundation Logo" className="h-8 w-8" />
-            <span className="font-serif text-xl font-bold text-primary-teal">Aadiv Care Foundation</span>
+            {loading ? (
+              <Skeleton className="h-8 w-8 rounded-full" />
+            ) : (
+              <img src={headerContent.header_logo_image?.url || '/placeholder.svg'} alt={headerContent.header_logo_image?.alt || 'Aadiv Care Foundation Logo'} className="h-8 w-8" />
+            )}
+            {loading ? (
+              <Skeleton className="h-6 w-48" />
+            ) : (
+              <span className="font-serif text-xl font-bold text-primary-teal">{headerContent.header_site_title || 'Aadiv Care Foundation'}</span>
+            )}
           </Link>
           <nav className="flex flex-col space-y-2">
             {loading ? (

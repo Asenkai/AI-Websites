@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MetaTags } from '@/components/shared/MetaTags';
 import { useLocation } from 'react-router-dom'; // Import useLocation to get URL parameters
+import { RazorpayDirectButton } from '@/components/shared/RazorpayDirectButton'; // Import the new component
 
 interface DonationPreset {
   amount: number;
@@ -27,6 +28,7 @@ interface DonatePageContent {
   ketto_button: { text: string; link: string };
   giveindia_button: { text: string; link: string };
   legal_note: string;
+  razorpay_direct_button_id: string; // Added for the direct button ID
 }
 
 const Donate = () => {
@@ -57,7 +59,10 @@ const Donate = () => {
             acc[item.element_id] = item.content_data;
           } else if (item.element_id === 'donation_presets') {
             acc[item.element_id] = item.content_data.presets;
-          } else {
+          } else if (item.element_id === 'razorpay_direct_button_id') { // Handle the new element
+            acc[item.element_id] = item.content_data.text;
+          }
+          else {
             acc[item.element_id] = item.content_data.text;
           }
           return acc;
@@ -298,7 +303,7 @@ const Donate = () => {
 
           <div className="mt-10 text-center">
             <h3 className="font-serif text-2xl font-bold text-primary-teal mb-6">Other Ways to Donate</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6"> {/* Changed to 3 columns */}
               <div className="p-6 bg-gray-100 rounded-lg shadow-sm flex flex-col items-center">
                 <QrCode size={48} className="text-primary-teal mb-4" />
                 <h4 className="font-semibold text-xl text-gray-800 mb-2">UPI / Paytm QR</h4>
@@ -314,6 +319,13 @@ const Donate = () => {
                   <p className="text-sm text-gray-500">UPI ID: {content.upi_id || 'aadivcare@upi'}</p>
                 )}
               </div>
+              {loading ? (
+                <Skeleton className="h-full w-full" />
+              ) : (
+                content.razorpay_direct_button_id && (
+                  <RazorpayDirectButton paymentButtonId={content.razorpay_direct_button_id} />
+                )
+              )}
               <div className="p-6 bg-gray-100 rounded-lg shadow-sm flex flex-col items-center justify-center">
                 <Wallet size={48} className="text-primary-teal mb-4" />
                 <h4 className="font-semibold text-xl text-gray-800 mb-2">Fundraisers</h4>

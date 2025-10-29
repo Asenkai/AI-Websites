@@ -152,12 +152,13 @@ const PageContentEditor = ({ pageSlug, title }: PageContentEditorProps) => {
     const isVolunteerRoles = item.element_id === 'volunteer_roles';
     const isMapEmbed = item.element_id === 'map_embed_url';
     const isVideoUrl = item.element_id === 'video_url';
+    const isRazorpayDirectButtonId = item.element_id === 'razorpay_direct_button_id'; // New check
 
     return (
       <div key={item.id} className="space-y-2 p-4 border rounded-md bg-gray-50">
         <Label htmlFor={item.id} className="capitalize font-medium text-gray-800">{item.element_id.replace(/_/g, ' ')}</Label>
         <div className="flex flex-col gap-2">
-          {item.content_data.text !== undefined && !isVolunteerRoles && !isPdf && (
+          {item.content_data.text !== undefined && !isVolunteerRoles && !isPdf && !isRazorpayDirectButtonId && (
             <Textarea
               id={item.id}
               value={item.content_data.text}
@@ -172,6 +173,14 @@ const PageContentEditor = ({ pageSlug, title }: PageContentEditorProps) => {
               onChange={(e) => handleContentChange(item.id, 'text', e.target.value)}
               placeholder="Enter each role on a new line"
               rows={5}
+            />
+          )}
+          {isRazorpayDirectButtonId && ( // Render input for Razorpay button ID
+            <Input
+              id={item.id}
+              value={item.content_data.text || ''}
+              onChange={(e) => handleContentChange(item.id, 'text', e.target.value)}
+              placeholder="Enter Razorpay Payment Button ID (e.g., pl_RYntgiwyug2I3D)"
             />
           )}
           {(isImage || isPdf) && (

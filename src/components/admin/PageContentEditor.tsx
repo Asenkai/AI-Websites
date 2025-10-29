@@ -150,15 +150,16 @@ const PageContentEditor = ({ pageSlug, title }: PageContentEditorProps) => {
     const isButton = item.element_id.includes('_button');
     const isDonationPresets = item.element_id === 'donation_presets';
     const isVolunteerRoles = item.element_id === 'volunteer_roles';
-    const isMapEmbed = item.element_id === 'map_embed_url';
+    const isMapEmbed = item.element_id === 'map_embed_url'; // This is the key
     const isVideoUrl = item.element_id === 'video_url';
-    const isRazorpayDirectButtonId = item.element_id === 'razorpay_direct_button_id'; // New check
+    const isRazorpayDirectButtonId = item.element_id === 'razorpay_direct_button_id';
 
     return (
       <div key={item.id} className="space-y-2 p-4 border rounded-md bg-gray-50">
         <Label htmlFor={item.id} className="capitalize font-medium text-gray-800">{item.element_id.replace(/_/g, ' ')}</Label>
         <div className="flex flex-col gap-2">
-          {item.content_data.text !== undefined && !isVolunteerRoles && !isPdf && !isRazorpayDirectButtonId && (
+          {/* Textarea for general text content, excluding specific types */}
+          {item.content_data.text !== undefined && !isVolunteerRoles && !isPdf && !isRazorpayDirectButtonId && !isMapEmbed && !isButton && (
             <Textarea
               id={item.id}
               value={item.content_data.text}
@@ -166,6 +167,7 @@ const PageContentEditor = ({ pageSlug, title }: PageContentEditorProps) => {
               rows={3}
             />
           )}
+          {/* Specific Textarea for Volunteer Roles */}
           {isVolunteerRoles && (
             <Textarea
               id={item.id}
@@ -175,7 +177,8 @@ const PageContentEditor = ({ pageSlug, title }: PageContentEditorProps) => {
               rows={5}
             />
           )}
-          {isRazorpayDirectButtonId && ( // Render input for Razorpay button ID
+          {/* Input for Razorpay Direct Button ID */}
+          {isRazorpayDirectButtonId && (
             <Input
               id={item.id}
               value={item.content_data.text || ''}
@@ -183,6 +186,7 @@ const PageContentEditor = ({ pageSlug, title }: PageContentEditorProps) => {
               placeholder="Enter Razorpay Payment Button ID (e.g., pl_RYntgiwyug2I3D)"
             />
           )}
+          {/* File input for Images and PDFs */}
           {(isImage || isPdf) && (
             <div className="flex items-center gap-4">
               <Input
@@ -199,6 +203,7 @@ const PageContentEditor = ({ pageSlug, title }: PageContentEditorProps) => {
               )}
             </div>
           )}
+          {/* Input for Image Alt Text */}
           {isImage && (
              <Input
                 placeholder="Image Alt Text"
@@ -206,6 +211,7 @@ const PageContentEditor = ({ pageSlug, title }: PageContentEditorProps) => {
                 onChange={(e) => handleContentChange(item.id, 'alt', e.target.value)}
               />
           )}
+          {/* Inputs for Button Text and Link */}
           {isButton && (
             <>
               <Input
@@ -220,13 +226,24 @@ const PageContentEditor = ({ pageSlug, title }: PageContentEditorProps) => {
               />
             </>
           )}
-          {(isMapEmbed || isVideoUrl) && (
+          {/* Textarea for Map Embed HTML */}
+          {isMapEmbed && (
+            <Textarea
+              placeholder="Google Maps Embed HTML (iframe code)"
+              value={item.content_data.text || ''} // Use text for HTML
+              onChange={(e) => handleContentChange(item.id, 'text', e.target.value)} // Save to text
+              rows={6}
+            />
+          )}
+          {/* Input for Video URL */}
+          {isVideoUrl && (
             <Input
-              placeholder={isMapEmbed ? "Google Maps Embed URL" : "YouTube Video URL"}
+              placeholder="YouTube Video URL"
               value={item.content_data.url || ''}
               onChange={(e) => handleContentChange(item.id, 'url', e.target.value)}
             />
           )}
+          {/* Donation Presets editor */}
           {isDonationPresets && (
             <div className="space-y-2">
               <Label>Donation Presets</Label>

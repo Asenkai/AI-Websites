@@ -13,7 +13,7 @@ interface ContactPageContent {
   address_line2: string;
   email_address: string;
   phone_number: string;
-  map_embed_url: string;
+  map_embed_html: string; // Changed from map_embed_url to map_embed_html
 }
 
 const Contact = () => {
@@ -32,8 +32,8 @@ const Contact = () => {
         console.error("Error fetching contact page content:", error);
       } else {
         const formattedContent = data.reduce((acc, item) => {
-          if (item.element_id === 'map_embed_url') {
-            acc[item.element_id] = item.content_data.url;
+          if (item.element_id === 'map_embed_url') { // Still checking for 'map_embed_url' from DB
+            acc.map_embed_html = item.content_data.text; // Now expects HTML in 'text' field
           } else {
             acc[item.element_id] = item.content_data.text;
           }
@@ -133,16 +133,10 @@ const Contact = () => {
               {loading ? (
                 <Skeleton className="w-full h-full" />
               ) : (
-                <iframe
-                  src={content.map_embed_url || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3506.7000000000005!2d77.53700000000001!3d28.487000000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce57000000001%3A0x390ce57000000001!2sMathurapur%20Village%2C%20Omicron%201%2C%20Greater%20Noida%2C%20Uttar%20Pradesh%20201310!5e0!3m2!1sen!2sin!4v1678912345678!5m2!1sen!2sin"}
-                  width="100%"
-                  height="450"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Aadiv Care Foundation Location"
-                ></iframe>
+                <div
+                  className="w-full h-full"
+                  dangerouslySetInnerHTML={{ __html: content.map_embed_html || '' }}
+                />
               )}
             </div>
           </div>
